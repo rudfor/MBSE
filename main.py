@@ -1,4 +1,4 @@
-import osmnx as ox
+import test1 as ox
 # This is a sample Python script.
 
 # Press Shift+F10 to execute it or replace it with your code.
@@ -13,7 +13,7 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
-    ox.plot_graph(ox.graph_from_place('Amager, Denmark'))
+    ox.plot_graph(ox.graph_from_place('14/55.8126/12.3695, Denmark'))
     # G = ox.graph_from_place('Amager, Denmark', network_type='walk')
     # basic_stats = ox.basic_stats(G)
     # print(basic_stats['circuity_avg'])
