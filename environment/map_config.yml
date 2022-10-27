@@ -1,0 +1,13 @@
+terrain:
+     north: 55.8279
+     east: 12.3406
+     south: 55.7995
+     west: 12.4209
+
+     Id: id2341
+     environment: us-east
+     serverId: s1342
+     awsHostname: 192.168.0.10
+     serverName: golinuxcloud.com
+     ipAddr: 192.168.0.1
+     roles: [webserver,php]
