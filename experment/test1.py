@@ -167,7 +167,7 @@ for i in range(len(lines)):
 print("Length of lat: ", len(lat))
 print("Length of lat2: ", len(lat2))
 
-plot_path(lat2, long2, origin_point, destination_point)
+#plot_path(lat2, long2, origin_point, destination_point)
 
 # Displaying the 3rd node
 #list(G.nodes(data=True))[20]
