@@ -1,19 +1,12 @@
+from simulator.simulator import run_simulator
 import test1 as ox
 # This is a sample Python script.
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-    ox.plot_graph(ox.graph_from_place('14/55.8126/12.3695, Denmark'))
+    print("Hola, mundo.")
+    run_simulator()
+#    print_hi('PyCharm')
+#    ox.plot_graph(ox.graph_from_place('14/55.8126/12.3695, Denmark'))
     # G = ox.graph_from_place('Amager, Denmark', network_type='walk')
     # basic_stats = ox.basic_stats(G)
     # print(basic_stats['circuity_avg'])
