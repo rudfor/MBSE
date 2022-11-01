@@ -1,6 +1,7 @@
 import random
 import osmnx as ox
 import networkx as nx
+import geopy.distance
 
 
 class OsmnxApi:
@@ -54,9 +55,10 @@ class OsmnxApi:
 
         end_latitude = self.graph.nodes[end]['x']
         end_longitude = self.graph.nodes[end]['y']
-
-        drone_distance = ox.distance.great_circle_vec(start_latitude, start_longitude, end_latitude,
-                                                      end_longitude, earth_radius=6371009)
+        coords_1 = [start_latitude, start_longitude]
+        coords_2 = [end_latitude, end_longitude]
+        drone_distance = geopy.distance.geodesic(coords_1, coords_2).m
+        #drone_distance = ox.distance.great_circle_vec(start_latitude, start_longitude, end_latitude, end_longitude, earth_radius=6371009)
         #route_length = int(sum(ox.utils_graph.get_route_edge_attributes(self.graph, bike_dist, "length")))
         return drone_distance
 
