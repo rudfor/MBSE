@@ -1,75 +1,133 @@
-import itertools
-
-from environment.order import Order
 from experiment.test3 import Map
+from simulator.event import EventType, Event
 from system.bike import Bike
-from system.drone import Drone_type1
-from system.kitchen import Kitchen
+from system.courier import CourierState
 from environment.order_generator import OrderGenerator
 from utility.point import Point
 
-# total_score = 0
+# Simulation configuration
+TIME_LIMIT_MINUTES = 90
 
-# order_generator = OrderGenerator()
-
-# kitchen = Kitchen(Point(0, 0))
-#num_drones = 10
-# drones = [Drone_type1(kitchen.position) for _ in range(0, num_drones)]
-# bikes = [Bike(kitchen.position) for _ in range(0, num_bikes)]
-
-
-TIME_LIMIT_MINUTES = 60
-ORDER_INTERVAL_MINUTES = 10
-
+# Environment
 MAP = Map()
+ORDER_GENERATOR = OrderGenerator(MAP)
 
-# 5 km/h
-AVG_BIKE_SPEED_METERS_PER_HOUR = 5000
-
-num_bikes = 1
-bikes = [Bike(Point(45501638, 45521416)) for _ in range(0, num_bikes)]
-
-# def calculate_score(order):
-#     pass
+# System
+kitchen_position = Point(45501638, 45521416)
+num_bikes = 3
+# num_drones = 3
+bikes = [Bike(kitchen_position, 0) for _ in range(0, num_bikes)]
 
 
 def run_simulator():
     current_time_minutes = 0
+    # Let's always start with an order, for testing purposes
+    next_order = Event(EventType.Order, 0, None)
+    orders = []
 
+    print_simulation_configuration()
+
+    # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
-        current_time_minutes += ORDER_INTERVAL_MINUTES
+        # Get next event
+        next_event = get_next_event(next_order.event_time)
 
-        if current_time_minutes % ORDER_INTERVAL_MINUTES == 0:
-            # Generate random order destination
-            order_start, order_end = MAP.next_destination()
-            distance = MAP.path_length(order_start, order_end)
-            print(f"order at time {current_time_minutes}: ({order_start}, {order_end}), distance: {distance}")
+        # Increment and print current time
+        current_time_minutes += next_event.event_time
+        print(f"Time: {current_time_minutes:.2f} minutes")
 
-            # Create bike courier
-            for bike in bikes:
-                if not bike.is_delivering():
-                    bike.order = Order(order_start, order_end, None)
+        # Move all couriers (bikes)
+        for bike in bikes:
+            bike.move(next_event.event_time)
 
-            # Move bike couriers
-            for bike in bikes:
-                bike.move(ORDER_INTERVAL_MINUTES)
+        # Perform operations depending on event type
+        match next_event.event_type:
+            case EventType.Order:
+                # Generate order with random destination and append it to the orders queue
+                order = ORDER_GENERATOR.generate_order()
+                orders.append(order)
+                print(f"EVENT: Incoming order {order.distance} meters away at {order.destination}")
+
+                next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(), None)
+
+            case EventType.Bike:
+                event_bike = next_event.event_obj
+                bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
+                print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
+
+        accept_orders(orders)
+
+        print_state()
 
 
-            # map.plot_path(order_start, order_end)
-        ######
-        # orders = order_generator.advance(1)
-        #
-        # kitchen.receive_orders(orders)
-        #
-        # couriers = itertools.chain(drones, bikes)
-        #
-        # for courier in couriers:
-        #     if kitchen.courier_present(courier):
-        #         kitchen.pickup_order(courier)
-        #
-        # for courier in couriers:
-        #     if courier.order_delivered():
-        #         total_score += calculate_score(courier.order)
-        #
-        # for courier in couriers:
-        #     courier.move()
+def get_next_event(time_until_next_order_minutes):
+    # Find time until next bike event (when bike arrives at order destination or back to kitchen)
+    bike_event = next_bike_event()
+
+    # Reduce time to next event to time of order, if order happens before any bike event
+
+    # If no bike events or order happens before bike event
+    if bike_event is None or time_until_next_order_minutes < bike_event.event_time:
+        return Event(EventType.Order, time_until_next_order_minutes, None)
+
+    # If order happens after (there must be a bike event at this point, otherwise we would have returned an order event)
+    return bike_event
+
+
+def accept_orders(orders):
+    # Assign orders to standby couriers (bikes), if any
+    # TODO: when drones, select drone based on order distance and drone battery life
+    for bike in bikes:
+        if orders and bike.is_standby():
+            bike.take_order(orders[0])
+            del orders[0]
+            print(f"ACTION: Order assigned to bike {bike.id}")
+            break
+
+    if orders:
+        print(f"ACTION: No bikes to take the {len(orders)} following orders:")
+        for order in orders:
+            print(order)
+
+
+def print_simulation_configuration():
+    print("Simulation configuration:")
+    print(f"TIME_LIMIT_MINUTES: {TIME_LIMIT_MINUTES}")
+    print(f"Kitchen at position {kitchen_position}")
+    print(f"{num_bikes} bikes available")
+    print("-----------------------------------------------------------------------------------------------------------")
+
+
+def adjust_event_for_order(time_until_next_event_minutes, time_until_next_order_minutes):
+    order_is_next_event = False
+    if time_until_next_event_minutes is None or time_until_next_order_minutes < time_until_next_event_minutes:
+        time_until_next_event_minutes = time_until_next_order_minutes
+        order_is_next_event = True
+    elif time_until_next_event_minutes is not None:
+        time_until_next_order_minutes -= time_until_next_event_minutes
+    return order_is_next_event, time_until_next_event_minutes
+
+
+def next_bike_event():
+    time_until_next_event_minutes = None
+    bike_event = None
+    for bike in bikes:
+        if not bike.is_standby():
+            if time_until_next_event_minutes is None or bike.time_to_destination() < time_until_next_event_minutes:
+                time_until_next_event_minutes = bike.time_to_destination()
+                bike_event = Event(EventType.Bike, time_until_next_event_minutes, bike)
+    return bike_event
+
+
+def print_state():
+    print("STATUS:")
+    for bike in bikes:
+        if bike.is_standby():
+            print(f"Bike {bike.id} standby at kitchen")
+        else:
+            state_str = "delivering order" if bike.state == CourierState.DeliveringOrder else "returning to kitchen"
+
+            print(
+                f"Bike {bike.id} at {bike.position} {state_str} with {bike.distance_to_destination:.2f} meters / {bike.time_to_destination():.2f} minutes left")
+
+    print("-----------------------------------------------------------------------------------------------------------")
