@@ -6,6 +6,7 @@ class CourierState(Enum):
     DeliveringOrder = 2
     ReturningToKitchen = 3
 
+
 class Courier:
     id_counter = 0
 

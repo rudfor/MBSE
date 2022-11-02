@@ -24,20 +24,23 @@ class Map:
         ox.distance.add_edge_lengths(self.G, precision=10)
         self.nodes = list(self.G.nodes())
 
-    def plot_path(self, start, end):
+    def plot_path(self, start, end, route_color):
         shortest_path = ox.distance.shortest_path(self.G, start, end, weight='length', cpus=1)
-        ox.plot.plot_graph_route(self.G, shortest_path, route_color='r', route_linewidth=4, route_alpha=0.5,
+        ox.plot.plot_graph_route(self.G, shortest_path, route_color=route_color, route_linewidth=4, route_alpha=0.5,
                                  orig_dest_size=100,
                                  ax=None)
 
     def next_destination(self):
-        start = random.choice(self.nodes)
+        #start = random.choice(self.nodes)
         end = random.choice(self.nodes)
 
-        return start, end
+        return end
 
     def path_length(self, start, end):
         shortest_path = ox.distance.shortest_path(self.G, start, end, weight='length', cpus=1)
         path_length = int(sum(ox.utils_graph.get_route_edge_attributes(self.G, shortest_path, "length")))
 
         return path_length
+
+    def get_node(self, id):
+        return self.G.nodes[id]
