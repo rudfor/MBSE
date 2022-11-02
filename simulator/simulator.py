@@ -1,6 +1,6 @@
 from experiment.test3 import Map
-from simulator.config import KITCHEN_NODE
-from simulator.event import EventType, Event
+from simulator.config import KITCHEN_NODE_ID
+from simulator.event import EventType, Event, from_courier
 from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
@@ -13,15 +13,18 @@ TIME_LIMIT_MINUTES = 90
 # Environment
 MAP = Map()
 ORDER_GENERATOR = OrderGenerator(MAP)
+KITCHEN_NODE = MAP.get_node(KITCHEN_NODE_ID)
 
 # System
-kitchen_node = KITCHEN_NODE
+kitchen_node = KITCHEN_NODE_ID
 kitchen_position = Point(45501638, 45521416)
 num_bikes = 3
 num_drones = 3
 bikes = [Bike(kitchen_position) for _ in range(0, num_bikes)]
-#drones = [DroneType1(kitchen_position) for _ in range(0, num_bikes)]
-# couriers = bikes.extend(drones)
+drones = [DroneType1(kitchen_position) for _ in range(0, num_drones)]
+couriers = []
+couriers.extend(bikes)
+couriers.extend(drones)
 
 
 def run_simulator():
@@ -42,8 +45,8 @@ def run_simulator():
         print(f"Time: {current_time_minutes:.2f} minutes")
 
         # Move all couriers (bikes)
-        for bike in bikes:
-            bike.move(next_event.event_time)
+        for courier in couriers:
+            courier.move(next_event.event_time)
 
         # Perform operations depending on event type
         match next_event.event_type:
@@ -59,10 +62,14 @@ def run_simulator():
                 event_bike = next_event.event_obj
                 bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
                 print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
-                if event_bike.state == CourierState.ReturningToKitchen:
-                    MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'r')
-                elif event_bike.state == CourierState.DeliveringOrder:
-                    MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'b')
+                # if event_bike.state == CourierState.ReturningToKitchen:
+                #     MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'r')
+                # elif event_bike.state == CourierState.DeliveringOrder:
+                #     MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'b')
+            case EventType.Drone:
+                event_drone = next_event.event_obj
+                drone_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
+                print(f"EVENT: {event_drone.courier_type()} {event_drone.id} {drone_event_str}")
 
         accept_orders(orders)
 
@@ -73,32 +80,32 @@ def run_simulator():
 
 def get_next_event(next_order):
     # Find time until next bike event (when bike arrives at order destination or back to kitchen)
-    bike_event = next_bike_event()
+    courier_event = next_courier_event()
 
     # Reduce time to next event to time of order, if order happens before any bike event
 
     # If no bike events or order happens before bike event
-    if bike_event is None or next_order.event_time < bike_event.event_time:
+    if courier_event is None or next_order.event_time < courier_event.event_time:
         return next_order
 
     # If order happens after (there must be a bike event at this point, otherwise we would have returned an order event)
-    next_order.event_time -= bike_event.event_time
-    return bike_event
+    next_order.event_time -= courier_event.event_time
+    return courier_event
 
 
 def accept_orders(orders):
     # Assign orders to standby couriers (bikes), if any
     # TODO: when drones, select drone based on order distance and drone battery life
-    for bike in bikes:
-        if orders and bike.is_standby():
+    for courier in couriers:
+        if orders and courier.is_standby():
             order = orders[0]
-            bike.take_order(orders[0])
+            courier.take_order(orders[0])
             del orders[0]
-            print(f"ACTION: Bike {bike.id} accepted order {order}")
+            print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {order}")
             break
 
     if orders:
-        print(f"ACTION: No bikes to take the following {len(orders)} order(s):")
+        print(f"ACTION: No couriers to take the following {len(orders)} order(s):")
         for order in orders:
             print(order)
 
@@ -106,8 +113,9 @@ def accept_orders(orders):
 def print_simulation_configuration():
     print("Simulation configuration:")
     print(f"TIME_LIMIT_MINUTES: {TIME_LIMIT_MINUTES}")
-    print(f"Kitchen at position {kitchen_position}")
+    print(f"Kitchen at position ({KITCHEN_NODE['x']}, {KITCHEN_NODE['y']})")
     print(f"{num_bikes} bikes available")
+    print(f"{num_drones} drones available")
     print("-----------------------------------------------------------------------------------------------------------")
 
 
@@ -121,26 +129,26 @@ def adjust_event_for_order(time_until_next_event_minutes, time_until_next_order_
     return order_is_next_event, time_until_next_event_minutes
 
 
-def next_bike_event():
+def next_courier_event():
     time_until_next_event_minutes = None
-    bike_event = None
-    for bike in bikes:
-        if not bike.is_standby():
-            if time_until_next_event_minutes is None or bike.time_to_destination() < time_until_next_event_minutes:
-                time_until_next_event_minutes = bike.time_to_destination()
-                bike_event = Event(EventType.Bike, time_until_next_event_minutes, bike)
-    return bike_event
+    courier_event = None
+    for courier in couriers:
+        if not courier.is_standby():
+            if time_until_next_event_minutes is None or courier.time_to_destination() < time_until_next_event_minutes:
+                time_until_next_event_minutes = courier.time_to_destination()
+                courier_event = Event(from_courier(courier), time_until_next_event_minutes, courier)
+    return courier_event
 
 
 def print_state():
     print("STATUS:")
-    for bike in bikes:
-        if bike.is_standby():
-            print(f"Bike {bike.id} standby at kitchen")
+    for courier in couriers:
+        if courier.is_standby():
+            print(f"{courier.courier_type()} {courier.id} standby at kitchen")
         else:
-            state_str = "delivering order" if bike.state == CourierState.DeliveringOrder else "returning to kitchen"
+            state_str = "delivering order" if courier.state == CourierState.DeliveringOrder else "returning to kitchen"
 
             print(
-                f"Bike {bike.id} {state_str} with {bike.distance_to_destination:.2f} meters / {bike.time_to_destination():.2f} minutes left")
+                f"{courier.courier_type()} {courier.id} {state_str} with {courier.distance_to_destination:.2f} meters / {courier.time_to_destination():.2f} minutes left")
 
     print("-----------------------------------------------------------------------------------------------------------")

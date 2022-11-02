@@ -1,4 +1,3 @@
-from turtle import position
 from system.courier import Courier
 
 
@@ -11,8 +10,11 @@ class DroneType1(Courier):
         self.battery = 25  # min
         # self.range = 3200 # m
         self.charge_time = 60  # 60 - 90 min
-        self.avg_speed = 15  # m/s
+        self.avg_speed = 15 * 60  # m/min  # m/s
         self.cargo_weight = 8  # kg
+
+    def courier_type(self):
+        return "DroneType1"
 
 
 class DroneType2(Courier):
@@ -27,6 +29,9 @@ class DroneType2(Courier):
         self.avg_speed = 15.5  # m/s
         self.cargo_weight = 6  # kg
 
+    def courier_type(self):
+        return "DroneType2"
+
 
 class DroneType3(Courier):
     # https://uavsystemsinternational.com/products/aurelia-x8-max-ready-to-fly
@@ -39,3 +44,6 @@ class DroneType3(Courier):
         self.charge_time = 90  # 60 - 90 min
         self.avg_speed = 15  # m/s
         self.cargo_weight = 11  # kg
+
+    def courier_type(self):
+        return "DroneType3"
