@@ -44,14 +44,9 @@ class Map:
 
     def path_length(self, start, end):
         shortest_path = ox.distance.shortest_path(self.G, start, end, weight='length', cpus=1)
-        if shortest_path is None:
-            return None
-        #print(shortest_path)
-        #print(self.get_node(start))
-        #print(self.get_node(end))
         path_length = int(sum(ox.utils_graph.get_route_edge_attributes(self.G, shortest_path, "length")))
 
         return path_length
 
-    def get_node(self, node_id):
-        return self.G.nodes[node_id]
+    def get_node(self, id):
+        return self.G.nodes[id]
