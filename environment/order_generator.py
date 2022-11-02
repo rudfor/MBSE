@@ -1,6 +1,7 @@
 import numpy
 
 from environment.order import Order
+from simulator.config import KITCHEN_NODE
 from utility.point import Point
 
 
@@ -13,9 +14,9 @@ class OrderGenerator:
     #     return []
 
     def generate_order(self, time_ordered):
-        order_start, order_end = self.map.next_destination()
-        distance = self.map.path_length(order_start, order_end)
-        return Order(Point(order_start, order_end), time_ordered, None, distance)
+        order_end = self.map.next_destination()
+        distance = self.map.path_length(KITCHEN_NODE, order_end)
+        return Order(Point(KITCHEN_NODE, order_end), time_ordered, None, distance)
 
     def generate_time_until_order(self):
         return numpy.random.normal(loc=10, scale=2.0, size=None)

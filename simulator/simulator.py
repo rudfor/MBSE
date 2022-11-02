@@ -1,8 +1,10 @@
 from experiment.test3 import Map
+from simulator.config import KITCHEN_NODE
 from simulator.event import EventType, Event
 from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
+from system.drone import DroneType1
 from utility.point import Point
 
 # Simulation configuration
@@ -13,10 +15,13 @@ MAP = Map()
 ORDER_GENERATOR = OrderGenerator(MAP)
 
 # System
+kitchen_node = KITCHEN_NODE
 kitchen_position = Point(45501638, 45521416)
 num_bikes = 3
-# num_drones = 3
-bikes = [Bike(kitchen_position, 0) for _ in range(0, num_bikes)]
+num_drones = 3
+bikes = [Bike(kitchen_position) for _ in range(0, num_bikes)]
+#drones = [DroneType1(kitchen_position) for _ in range(0, num_bikes)]
+# couriers = bikes.extend(drones)
 
 
 def run_simulator():
@@ -54,8 +59,14 @@ def run_simulator():
                 event_bike = next_event.event_obj
                 bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
                 print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
+                if event_bike.state == CourierState.ReturningToKitchen:
+                    MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'r')
+                elif event_bike.state == CourierState.DeliveringOrder:
+                    MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'b')
 
         accept_orders(orders)
+
+        #
 
         print_state()
 
@@ -130,6 +141,6 @@ def print_state():
             state_str = "delivering order" if bike.state == CourierState.DeliveringOrder else "returning to kitchen"
 
             print(
-                f"Bike {bike.id} at {bike.position} {state_str} with {bike.distance_to_destination:.2f} meters / {bike.time_to_destination():.2f} minutes left")
+                f"Bike {bike.id} {state_str} with {bike.distance_to_destination:.2f} meters / {bike.time_to_destination():.2f} minutes left")
 
     print("-----------------------------------------------------------------------------------------------------------")
