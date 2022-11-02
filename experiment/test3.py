@@ -31,7 +31,7 @@ class Map:
                                  ax=None)
 
     def next_destination(self):
-        #start = random.choice(self.nodes)
+        # start = random.choice(self.nodes)
         end = random.choice(self.nodes)
 
         return end
@@ -42,5 +42,5 @@ class Map:
 
         return path_length
 
-    def get_node(self, id):
-        return self.G.nodes[id]
+    def get_node(self, node_id):
+        return self.G.nodes[node_id]

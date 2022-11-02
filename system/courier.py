@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from enum import Enum
 
 
@@ -53,3 +54,7 @@ class Courier:
 
     def has_arrived(self):
         return self.distance_to_destination <= 0
+
+    @abstractmethod
+    def courier_type(self):
+        pass
