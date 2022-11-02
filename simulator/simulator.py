@@ -6,9 +6,10 @@ from system.courier import CourierState
 from environment.order_generator import OrderGenerator
 from system.drone import DroneType1
 from utility.point import Point
+from display.plot_avg_time import *
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 90
+TIME_LIMIT_MINUTES = 900
 
 # Environment
 MAP = Map()
@@ -18,8 +19,8 @@ KITCHEN_NODE = MAP.get_node(KITCHEN_NODE_ID)
 # System
 kitchen_node = KITCHEN_NODE_ID
 kitchen_position = Point(45501638, 45521416)
-num_bikes = 3
-num_drones = 3
+num_bikes = 0
+num_drones = 6
 bikes = [Bike(kitchen_position) for _ in range(0, num_bikes)]
 drones = [DroneType1(kitchen_position) for _ in range(0, num_drones)]
 couriers = []
@@ -27,11 +28,18 @@ couriers.extend(bikes)
 couriers.extend(drones)
 
 
+
+
 def run_simulator():
     current_time_minutes = 0
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
     orders = []
+
+    # For ploting
+    total_bike_orders_delivered = 0
+    avg_order_time_data = []
+    total_delivery_time = 0
 
     print_simulation_configuration()
 
@@ -66,6 +74,17 @@ def run_simulator():
                 #     MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'r')
                 # elif event_bike.state == CourierState.DeliveringOrder:
                 #     MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'b')
+
+                total_bike_orders_delivered += 1
+                delivery_time = current_time_minutes - event_bike.order.time_ordered
+                total_delivery_time += delivery_time
+
+                print(delivery_time)
+                
+                avg_time = total_delivery_time / total_bike_orders_delivered
+                avg_order_time_data.append((current_time_minutes, avg_time))
+
+
             case EventType.Drone:
                 event_drone = next_event.event_obj
                 drone_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
@@ -76,6 +95,7 @@ def run_simulator():
         #
 
         print_state()
+    plot(avg_order_time_data)
 
 
 def get_next_event(next_order):
@@ -100,6 +120,7 @@ def accept_orders(orders):
         if orders and courier.is_standby():
             order = orders[0]
             courier.take_order(orders[0])
+
             del orders[0]
             print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {order}")
             break
