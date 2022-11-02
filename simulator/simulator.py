@@ -30,7 +30,7 @@ def run_simulator():
     # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
         # Get next event
-        next_event = get_next_event(next_order.event_time)
+        next_event = get_next_event(next_order)
 
         # Increment and print current time
         current_time_minutes += next_event.event_time
@@ -44,9 +44,9 @@ def run_simulator():
         match next_event.event_type:
             case EventType.Order:
                 # Generate order with random destination and append it to the orders queue
-                order = ORDER_GENERATOR.generate_order()
+                order = ORDER_GENERATOR.generate_order(current_time_minutes)
                 orders.append(order)
-                print(f"EVENT: Incoming order {order.distance} meters away at {order.destination}")
+                print(f"EVENT: Incoming order {order}")
 
                 next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(), None)
 
@@ -60,17 +60,18 @@ def run_simulator():
         print_state()
 
 
-def get_next_event(time_until_next_order_minutes):
+def get_next_event(next_order):
     # Find time until next bike event (when bike arrives at order destination or back to kitchen)
     bike_event = next_bike_event()
 
     # Reduce time to next event to time of order, if order happens before any bike event
 
     # If no bike events or order happens before bike event
-    if bike_event is None or time_until_next_order_minutes < bike_event.event_time:
-        return Event(EventType.Order, time_until_next_order_minutes, None)
+    if bike_event is None or next_order.event_time < bike_event.event_time:
+        return next_order
 
     # If order happens after (there must be a bike event at this point, otherwise we would have returned an order event)
+    next_order.event_time -= bike_event.event_time
     return bike_event
 
 
@@ -79,13 +80,14 @@ def accept_orders(orders):
     # TODO: when drones, select drone based on order distance and drone battery life
     for bike in bikes:
         if orders and bike.is_standby():
+            order = orders[0]
             bike.take_order(orders[0])
             del orders[0]
-            print(f"ACTION: Order assigned to bike {bike.id}")
+            print(f"ACTION: Bike {bike.id} accepted order {order}")
             break
 
     if orders:
-        print(f"ACTION: No bikes to take the {len(orders)} following orders:")
+        print(f"ACTION: No bikes to take the following {len(orders)} order(s):")
         for order in orders:
             print(order)
 

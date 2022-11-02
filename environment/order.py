@@ -6,6 +6,6 @@ class Order:
         self.distance = distance
 
     def __str__(self):
-        return f"Order to {self.destination} ordered at {self.time_ordered} minutes with distance {self.distance} meters"
+        return f"{self.distance} meters away at {self.destination} made at time {self.time_ordered:.2f}"
 
 
