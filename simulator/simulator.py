@@ -1,3 +1,4 @@
+from platform import node
 from experiment.test3 import Map
 from simulator.config import KITCHEN_NODE
 from simulator.event import EventType, Event
@@ -6,6 +7,7 @@ from system.courier import CourierState
 from environment.order_generator import OrderGenerator
 from system.drone import DroneType1
 from utility.point import Point
+import osmnx as ox
 
 # Simulation configuration
 TIME_LIMIT_MINUTES = 90
@@ -29,6 +31,8 @@ def run_simulator():
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
     orders = []
+    paths = []
+    colors = []
 
     print_simulation_configuration()
 
@@ -59,17 +63,31 @@ def run_simulator():
                 event_bike = next_event.event_obj
                 bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
                 print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
-                if event_bike.state == CourierState.ReturningToKitchen:
-                    MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'r')
-                elif event_bike.state == CourierState.DeliveringOrder:
-                    MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'b')
 
         accept_orders(orders)
 
-        #
+        for bike in bikes:
+            if bike.is_standby():
+                shortest_path = ox.distance.shortest_path(MAP.G, kitchen_node, kitchen_node, weight='length', cpus=1)
+                colors.append("y")
+                paths.append(shortest_path)
+                continue
+
+            shortest_path = ox.distance.shortest_path(MAP.G, kitchen_node, bike.order.destination.y, weight='length', cpus=1)
+
+            if bike.state == CourierState.ReturningToKitchen:
+                colors.append("r")
+                paths.append(shortest_path)
+            elif bike.state == CourierState.DeliveringOrder: 
+                colors.append("b")
+                paths.append(shortest_path)
+             
 
         print_state()
 
+        MAP.plot_path(paths, colors)
+        paths = []
+        colors = []
 
 def get_next_event(next_order):
     # Find time until next bike event (when bike arrives at order destination or back to kitchen)
