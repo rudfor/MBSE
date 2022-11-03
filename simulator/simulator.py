@@ -1,3 +1,4 @@
+from platform import node
 from experiment.test3 import Map
 from simulator.config import KITCHEN_NODE_ID
 from simulator.event import EventType, Event, from_courier
@@ -7,6 +8,7 @@ from environment.order_generator import OrderGenerator
 from system.drone import DroneType1, DroneType2, DroneType3
 from utility.point import Point
 from display.plot_avg_time import *
+import osmnx as ox
 
 # Simulation configuration
 TIME_LIMIT_MINUTES = 900
@@ -44,6 +46,8 @@ def run_simulator():
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
     orders = []
+    paths = []
+    colors = []
 
     # For ploting
     total_orders_delivered = 0
@@ -105,13 +109,41 @@ def run_simulator():
                 avg_time = total_delivery_time / total_orders_delivered
                 avg_order_time_data.append((current_time_minutes, avg_time))
 
+
         accept_orders(orders)
 
-        #
+        for courier in couriers:
+            path = []
+            if courier.is_standby():
+                if isinstance(courier, Bike):
+                    path.extend(ox.distance.shortest_path(MAP.G, KITCHEN_NODE_ID, KITCHEN_NODE_ID, weight='length', cpus=1))
+                else:
+                    path.extend([KITCHEN_NODE_ID, KITCHEN_NODE_ID])
+
+                colors.append("y")
+                paths.append(path)
+                continue
+
+            if isinstance(courier, Bike):
+                path.extend(ox.distance.shortest_path(MAP.G, KITCHEN_NODE_ID, courier.order.destination_node, weight='length', cpus=1))
+            else:
+                path.extend([KITCHEN_NODE_ID, courier.order.destination_node])
+
+
+            if courier.state == CourierState.ReturningToKitchen:
+                colors.append("r")
+                paths.append(path)
+            elif courier.state == CourierState.DeliveringOrder:
+                colors.append("b")
+                paths.append(path)
+             
 
         print_state()
-    plot(avg_order_time_data)
+        #plot(avg_order_time_data)
 
+        MAP.plot_path(paths, colors)
+        paths = []
+        colors = []
 
 def get_next_event(next_order):
     # Find time until next bike event (when bike arrives at order destination or back to kitchen)

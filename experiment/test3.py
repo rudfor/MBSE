@@ -24,17 +24,22 @@ class Map:
         ox.distance.add_edge_lengths(self.G, precision=10)
         self.nodes = list(self.G.nodes())
 
-    def plot_path(self, start, end, route_color, path_type):
-        if path_type == "bike":
-            shortest_path = ox.distance.shortest_path(self.G, start, end, weight='length', cpus=1)
-            ox.plot.plot_graph_route(self.G, shortest_path, route_color=route_color, route_linewidth=4, route_alpha=0.5,
-                                     orig_dest_size=100,
-                                     ax=None)
-        elif path_type == "drone":
-            path = [start, end]
-            ox.plot.plot_graph_route(self.G, path, route_color=route_color, route_linewidth=4, route_alpha=0.5,
-                                     orig_dest_size=100,
-                                     ax=None)
+    # def plot_path(self, start, end, route_color, path_type):
+    #     if path_type == "bike":
+    #         shortest_path = ox.distance.shortest_path(self.G, start, end, weight='length', cpus=1)
+    #         ox.plot.plot_graph_route(self.G, shortest_path, route_color=route_color, route_linewidth=4, route_alpha=0.5,
+    #                                  orig_dest_size=100,
+    #                                  ax=None)
+    #     elif path_type == "drone":
+    #         path = [start, end]
+    #         ox.plot.plot_graph_route(self.G, path, route_color=route_color, route_linewidth=4, route_alpha=0.5,
+    #                                  orig_dest_size=100,
+    #                                  ax=None)
+    def plot_path(self, paths, colors):
+        #shortest_path = ox.distance.shortest_path(self.G, start, end, weight='length', cpus=1)
+        print(paths)
+        fig, ax = ox.plot.plot_graph_routes(self.G, paths, route_colors=colors, route_linewidth=4, route_alpha=0.5, orig_dest_size=100)
+
 
     def next_destination(self):
         # start = random.choice(self.nodes)
