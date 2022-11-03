@@ -22,19 +22,6 @@ def test_plot_graph():
     "city_country, network_type, nodes",
     [
         (
-                r"Leiden, Netherlands",
-                r"drive",
-                3124,
-        ),
-        (
-                r"Lyngby, Denmark",
-                r"drive",
-                9,
-        ),
-        (
-                r"Amager, Denmark",
-                r"drive",
-                3374,
             r"Leiden, Netherlands",
             r"drive",
             3122,
