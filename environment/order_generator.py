@@ -14,8 +14,13 @@ class OrderGenerator:
     #     return []
 
     def generate_order(self, time_ordered):
-        order_end = self.map.next_destination()
-        distance = self.map.path_length(KITCHEN_NODE_ID, order_end)
+        order_end = None
+        distance = None
+        # TODO: if no shortest path, make drone take that order
+        while distance is None:
+            order_end = self.map.next_destination()
+            distance = self.map.path_length(KITCHEN_NODE_ID, order_end)
+
         order_end_node = self.map.get_node(order_end)
         return Order(Point(order_end_node['x'], order_end_node['y']), time_ordered, None, distance)
 

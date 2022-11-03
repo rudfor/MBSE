@@ -18,10 +18,10 @@ ORDER_GENERATOR = OrderGenerator(MAP)
 # System
 KITCHEN_NODE = MAP.get_node(KITCHEN_NODE_ID)
 KITCHEN_POSITION = Point(KITCHEN_NODE['x'], KITCHEN_NODE['y'])
-num_bikes = 3
-num_drones_type1 = 0
-num_drones_type2 = 0
-num_drones_type3 = 0
+num_bikes = 0
+num_drones_type1 = 1
+num_drones_type2 = 1
+num_drones_type3 = 1
 num_drones = num_drones_type1 + num_drones_type2 + num_drones_type3
 bikes = [Bike(KITCHEN_POSITION) for _ in range(0, num_bikes)]
 drones_type1 = [DroneType1(KITCHEN_POSITION) for _ in range(0, num_drones_type1)]
