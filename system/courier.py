@@ -27,9 +27,6 @@ class Courier:
             if self.has_arrived():
                 self.update_arrival()
 
-    # def order_delivered(self):
-    #     return self.position == self.order.position
-
     def is_delivering(self):
         return self.order is not None
 
@@ -51,6 +48,7 @@ class Courier:
         self.order = order
         self.distance_to_destination = self.order.distance
         self.state = CourierState.DeliveringOrder
+        return True
 
     def has_arrived(self):
         return self.distance_to_destination <= 0

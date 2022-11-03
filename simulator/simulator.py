@@ -4,7 +4,7 @@ from simulator.event import EventType, Event, from_courier
 from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
-from system.drone import DroneType1
+from system.drone import DroneType1, DroneType2, DroneType3
 from utility.point import Point
 
 # Simulation configuration
@@ -13,19 +13,27 @@ TIME_LIMIT_MINUTES = 90
 # Environment
 MAP = Map()
 ORDER_GENERATOR = OrderGenerator(MAP)
-KITCHEN_NODE = MAP.get_node(KITCHEN_NODE_ID)
 
 # System
-kitchen_node = KITCHEN_NODE_ID
-kitchen_position = Point(45501638, 45521416)
-num_bikes = 3
-num_drones = 3
-bikes = [Bike(kitchen_position) for _ in range(0, num_bikes)]
-drones = [DroneType1(kitchen_position) for _ in range(0, num_drones)]
+KITCHEN_NODE = MAP.get_node(KITCHEN_NODE_ID)
+KITCHEN_POSITION = Point(KITCHEN_NODE['x'], KITCHEN_NODE['y'])
+num_bikes = 0
+num_drones_type1 = 1
+num_drones_type2 = 1
+num_drones_type3 = 1
+num_drones = num_drones_type1 + num_drones_type2 + num_drones_type3
+bikes = [Bike(KITCHEN_POSITION) for _ in range(0, num_bikes)]
+drones_type1 = [DroneType1(KITCHEN_POSITION) for _ in range(0, num_drones_type1)]
+drones_type2 = [DroneType2(KITCHEN_POSITION) for _ in range(0, num_drones_type2)]
+drones_type3 = [DroneType3(KITCHEN_POSITION) for _ in range(0, num_drones_type3)]
+
 couriers = []
 couriers.extend(bikes)
-couriers.extend(drones)
+couriers.extend(drones_type1)
+couriers.extend(drones_type2)
+couriers.extend(drones_type3)
 
+# todo: refactor drone classes, make battery charge time correct,
 
 def run_simulator():
     current_time_minutes = 0
@@ -43,6 +51,12 @@ def run_simulator():
         # Increment and print current time
         current_time_minutes += next_event.event_time
         print(f"Time: {current_time_minutes:.2f} minutes")
+
+        # Charge drones
+        for courier in couriers:
+            if not isinstance(courier, Bike) and courier.is_standby():
+                #courier.battery = min(courier.battery_capacity, courier.battery + next_event.event_time)
+                courier.charge(next_event.event_time)
 
         # Move all couriers (bikes)
         for courier in couriers:
@@ -62,10 +76,7 @@ def run_simulator():
                 event_bike = next_event.event_obj
                 bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
                 print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
-                # if event_bike.state == CourierState.ReturningToKitchen:
-                #     MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'r')
-                # elif event_bike.state == CourierState.DeliveringOrder:
-                #     MAP.plot_path(kitchen_node, event_bike.order.destination.y, 'b')
+
             case EventType.Drone:
                 event_drone = next_event.event_obj
                 drone_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
@@ -99,11 +110,11 @@ def accept_orders(orders):
     for courier in couriers:
         if orders and courier.is_standby():
             order = orders[0]
-            courier.take_order(orders[0])
-            del orders[0]
-            print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {order}")
-            break
-
+            if courier.take_order(orders[0]):
+                del orders[0]
+                print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {order}")
+            else:
+                print(f"ACTION: {courier.courier_type()} {courier.id} with battery {courier.battery:.2f} minutes / {courier.avg_speed * courier.battery:.2f} meters left could not accept order {order}")
     if orders:
         print(f"ACTION: No couriers to take the following {len(orders)} order(s):")
         for order in orders:
@@ -144,11 +155,19 @@ def print_state():
     print("STATUS:")
     for courier in couriers:
         if courier.is_standby():
-            print(f"{courier.courier_type()} {courier.id} standby at kitchen")
+            if not isinstance(courier, Bike):
+                print(f"{courier.courier_type()} {courier.id} standby at kitchen. Battery time left: {courier.battery:.2f} minutes")
+            else:
+                print(
+                    f"{courier.courier_type()} {courier.id} standby at kitchen")
         else:
             state_str = "delivering order" if courier.state == CourierState.DeliveringOrder else "returning to kitchen"
 
-            print(
-                f"{courier.courier_type()} {courier.id} {state_str} with {courier.distance_to_destination:.2f} meters / {courier.time_to_destination():.2f} minutes left")
+            if not isinstance(courier, Bike):
+                print(
+                    f"{courier.courier_type()} {courier.id} {state_str} with {courier.distance_to_destination:.2f} meters / {courier.time_to_destination():.2f} minutes left.  Battery time left: {courier.battery:.2f} minutes")
+            else:
+                print(
+                    f"{courier.courier_type()} {courier.id} {state_str} with {courier.distance_to_destination:.2f} meters / {courier.time_to_destination():.2f} minutes left")
 
     print("-----------------------------------------------------------------------------------------------------------")
