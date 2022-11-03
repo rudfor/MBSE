@@ -33,7 +33,7 @@ def car(name, env, gas_station):
 
 
 def car_generator(env, gas_station):
-    for i in range(4):
+    for i in range(40):
         env.process(car(i, env, gas_station))
         yield env.timeout(5)
 
@@ -42,4 +42,4 @@ if __name__ == '__main__':
     env = simpy.Environment()
     gas_station = GasStation(env)
     car_gen = env.process(car_generator(env, gas_station))
-    env.run(35)
+    env.run(999)
