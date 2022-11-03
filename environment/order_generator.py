@@ -20,4 +20,4 @@ class OrderGenerator:
         return Order(Point(order_end_node['x'], order_end_node['y']), time_ordered, None, distance)
 
     def generate_time_until_order(self):
-        return numpy.random.normal(loc=10, scale=2.0, size=None)
+        return max(0, numpy.random.normal(loc=10, scale=2.0, size=None))
