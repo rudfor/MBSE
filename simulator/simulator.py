@@ -46,7 +46,7 @@ def run_simulator():
     orders = []
 
     # For ploting
-    total_bike_orders_delivered = 0
+    total_orders_delivered = 0
     avg_order_time_data = []
     total_delivery_time = 0
 
@@ -86,19 +86,24 @@ def run_simulator():
                 bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
                 print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
 
-                total_bike_orders_delivered += 1
+                total_orders_delivered += 1
                 delivery_time = current_time_minutes - event_bike.order.time_ordered
                 total_delivery_time += delivery_time
 
-                print(delivery_time)
-                
-                avg_time = total_delivery_time / total_bike_orders_delivered
+                avg_time = total_delivery_time / total_orders_delivered
                 avg_order_time_data.append((current_time_minutes, avg_time))
 
             case EventType.Drone:
                 event_drone = next_event.event_obj
                 drone_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
                 print(f"EVENT: {event_drone.courier_type()} {event_drone.id} {drone_event_str}")
+
+                total_orders_delivered += 1
+                delivery_time = current_time_minutes - event_drone.order.time_ordered
+                total_delivery_time += delivery_time
+
+                avg_time = total_delivery_time / total_orders_delivered
+                avg_order_time_data.append((current_time_minutes, avg_time))
 
         accept_orders(orders)
 
