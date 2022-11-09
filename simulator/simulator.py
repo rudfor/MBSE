@@ -1,14 +1,19 @@
-from experiment.test3 import Map
+from matplotlib.pyplot import plot
+
+from simulator.map import Map
 from simulator.config import KITCHEN_NODE_ID
 from simulator.event import EventType, Event, from_courier
 from system.bike import Bike
 from system.courier import CourierState
+#from system.drone import Drone
+#from system.kitchen import Kitchen
 from environment.order_generator import OrderGenerator
 from system.drone import DroneType1, DroneType2, DroneType3
 from utility.point import Point
+from display.plot_avg_time import plot
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 90
+TIME_LIMIT_MINUTES = 900
 
 # Environment
 MAP = Map()
@@ -17,11 +22,13 @@ ORDER_GENERATOR = OrderGenerator(MAP)
 # System
 KITCHEN_NODE = MAP.get_node(KITCHEN_NODE_ID)
 KITCHEN_POSITION = Point(KITCHEN_NODE['x'], KITCHEN_NODE['y'])
-num_bikes = 0
+
+num_bikes = 1
 num_drones_type1 = 1
 num_drones_type2 = 1
 num_drones_type3 = 1
 num_drones = num_drones_type1 + num_drones_type2 + num_drones_type3
+
 bikes = [Bike(KITCHEN_POSITION) for _ in range(0, num_bikes)]
 drones_type1 = [DroneType1(KITCHEN_POSITION) for _ in range(0, num_drones_type1)]
 drones_type2 = [DroneType2(KITCHEN_POSITION) for _ in range(0, num_drones_type2)]
@@ -33,13 +40,17 @@ couriers.extend(drones_type1)
 couriers.extend(drones_type2)
 couriers.extend(drones_type3)
 
-# todo: refactor drone classes, make battery charge time correct,
 
 def run_simulator():
     current_time_minutes = 0
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
     orders = []
+
+    # For plotting
+    total_orders_delivered = 0
+    avg_order_time_data = []
+    total_delivery_time = 0
 
     print_simulation_configuration()
 
@@ -55,7 +66,6 @@ def run_simulator():
         # Charge drones
         for courier in couriers:
             if not isinstance(courier, Bike) and courier.is_standby():
-                #courier.battery = min(courier.battery_capacity, courier.battery + next_event.event_time)
                 courier.charge(next_event.event_time)
 
         # Move all couriers (bikes)
@@ -72,21 +82,27 @@ def run_simulator():
 
                 next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(), None)
 
-            case EventType.Bike:
-                event_bike = next_event.event_obj
-                bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
-                print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
-
-            case EventType.Drone:
-                event_drone = next_event.event_obj
+            case EventType.Bike | EventType.Drone:
+                event_courier = next_event.event_obj
                 drone_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
-                print(f"EVENT: {event_drone.courier_type()} {event_drone.id} {drone_event_str}")
+                print(f"EVENT: {event_courier.courier_type()} {event_courier.id} {drone_event_str}")
+
+                # Order delivered, update stats
+                if next_event.event_obj.state == CourierState.ReturningToKitchen:
+                    total_orders_delivered += 1
+                    delivery_time = current_time_minutes - event_courier.order.time_ordered
+                    total_delivery_time += delivery_time
+
+                    avg_time = total_delivery_time / total_orders_delivered
+                    avg_order_time_data.append((current_time_minutes, avg_time))
 
         accept_orders(orders)
 
-        #
-
         print_state()
+
+        MAP.plot_courier_paths(couriers)
+
+    plot(avg_order_time_data)
 
 
 def get_next_event(next_order):
@@ -114,7 +130,9 @@ def accept_orders(orders):
                 del orders[0]
                 print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {order}")
             else:
-                print(f"ACTION: {courier.courier_type()} {courier.id} with battery {courier.battery:.2f} minutes / {courier.avg_speed * courier.battery:.2f} meters left could not accept order {order}")
+                print(
+                    f"ACTION: {courier.courier_type()} {courier.id} with battery {courier.battery:.2f} minutes / {courier.avg_speed * courier.battery:.2f} meters left could not accept order {order}")
+
     if orders:
         print(f"ACTION: No couriers to take the following {len(orders)} order(s):")
         for order in orders:
@@ -156,7 +174,8 @@ def print_state():
     for courier in couriers:
         if courier.is_standby():
             if not isinstance(courier, Bike):
-                print(f"{courier.courier_type()} {courier.id} standby at kitchen. Battery time left: {courier.battery:.2f} minutes")
+                print(
+                    f"{courier.courier_type()} {courier.id} standby at kitchen. Battery time left: {courier.battery:.2f} minutes")
             else:
                 print(
                     f"{courier.courier_type()} {courier.id} standby at kitchen")
