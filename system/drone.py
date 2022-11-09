@@ -1,17 +1,18 @@
 from abc import abstractmethod
-
 from system.courier import Courier, CourierState
-
+from turtle import position
+from utility.argparser import args
 
 class Drone(Courier):
     def __init__(self, position):
         super().__init__(position, 0)
-        self.cost = None  # DKK
-        self.battery_capacity = None
-        self.battery = None  # min
-        self.charge_time = None  # 60 - 90 min
-        self.avg_speed = None  # m/min  # m/s
-        self.cargo_weight = None  # kg
+        self.cost = args.DRONE_COST  # DKK
+        self.battery_capacity = args.DRONE_BAT_CAP
+        self.battery = args.DRONE_FLIGHT_TIME  # min
+        self.range = args.DRONE_RANGE # m
+        self.charge_time = args.DRONE_CHARGE_TIME  # 60 - 90 min
+        self.avg_speed = args.DRONE_AVG_SPEED  # m/s
+        self.cargo_weight = args.DRONE_WEIGHT_LIMIT  # kg
 
     def move(self, delta_time_minutes):
         if not self.is_standby():
@@ -86,3 +87,12 @@ class DroneType3(Drone):
 
     def courier_type(self):
         return "DroneType3"
+
+class DefaultDrone(Courier):
+    
+    def __init__(self, position):
+        super().__init__(position)
+        
+
+    def courier_type(self):
+        return "DefaultDrone"

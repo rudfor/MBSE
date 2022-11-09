@@ -8,6 +8,7 @@ from system.courier import CourierState
 from environment.order_generator import OrderGenerator
 from system.drone import DroneType1, DroneType2, DroneType3
 from utility.point import Point
+from utility.argparser import args
 from display.plot_avg_time import plot
 
 # Simulation configuration
@@ -98,7 +99,8 @@ def run_simulator():
 
         print_state()
 
-        MAP.plot_courier_paths(couriers)
+        if args.PLOT:
+            MAP.plot_courier_paths(couriers)
 
     plot(avg_order_time_data)
 

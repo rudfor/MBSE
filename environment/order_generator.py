@@ -8,6 +8,7 @@ from utility.point import Point
 class OrderGenerator:
     def __init__(self, osmnx_map):
         self.map = osmnx_map
+        numpy.random.seed(2223)
 
     # Return a list of orders when time dt has elapsed
     # def advance(self, dt):
