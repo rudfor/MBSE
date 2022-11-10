@@ -6,7 +6,7 @@ from simulator.event import EventType, Event, from_courier
 from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
-from system.drone import DroneType1, DroneType2, DroneType3
+from system.drone import DefaultDrone, DroneType1, DroneType2, DroneType3
 from utility.point import Point
 from utility.argparser import args
 from display.plot_avg_time import plot
@@ -22,19 +22,22 @@ ORDER_GENERATOR = OrderGenerator(MAP)
 KITCHEN_NODE = MAP.get_node(KITCHEN_NODE_ID)
 KITCHEN_POSITION = Point(KITCHEN_NODE['x'], KITCHEN_NODE['y'])
 
-num_bikes = 1
-num_drones_type1 = 1
-num_drones_type2 = 1
-num_drones_type3 = 1
-num_drones = num_drones_type1 + num_drones_type2 + num_drones_type3
+num_bikes = args.NUM_BIKES
+num_drones_default = args.NUM_DD
+num_drones_type1 = args.NUM_DT1
+num_drones_type2 = args.NUM_DT2
+num_drones_type3 = args.NUM_DT3
+num_drones = num_drones_type1 + num_drones_type2 + num_drones_type3 + num_drones_default
 
 bikes = [Bike(KITCHEN_POSITION) for _ in range(0, num_bikes)]
+drones_default = [DefaultDrone(KITCHEN_POSITION) for _ in range(0, num_drones_default)]
 drones_type1 = [DroneType1(KITCHEN_POSITION) for _ in range(0, num_drones_type1)]
 drones_type2 = [DroneType2(KITCHEN_POSITION) for _ in range(0, num_drones_type2)]
 drones_type3 = [DroneType3(KITCHEN_POSITION) for _ in range(0, num_drones_type3)]
 
 couriers = []
 couriers.extend(bikes)
+couriers.extend(drones_default)
 couriers.extend(drones_type1)
 couriers.extend(drones_type2)
 couriers.extend(drones_type3)

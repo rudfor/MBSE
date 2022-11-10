@@ -3,12 +3,14 @@ import numpy
 from environment.order import Order
 from simulator.config import KITCHEN_NODE_ID
 from utility.point import Point
+from utility.argparser import args
 
 
 class OrderGenerator:
     def __init__(self, osmnx_map):
         self.map = osmnx_map
-        numpy.random.seed(2223)
+        if not args.RNDM:
+            numpy.random.seed(2223)
 
     # Return a list of orders when time dt has elapsed
     # def advance(self, dt):
