@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from simulator.simulator import run_simulator
 from utility.argparser import args
 import random
