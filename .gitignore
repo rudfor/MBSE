@@ -1,4 +1,7 @@
 cache/
 .idea/
 __pycache__/
+**/__init__.pyc
 virtenv
+.vscode
+random
