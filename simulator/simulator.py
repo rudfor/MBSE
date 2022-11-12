@@ -1,4 +1,4 @@
-from experiment.test3 import Map
+from simulator.map import Map
 from simulator.config import KITCHEN_NODE_ID
 from simulator.event import EventType, Event, from_courier
 from system.bike import Bike

@@ -11,6 +11,7 @@ and y-axis is the labor productivity for that periode.
 #For the data
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
 from datetime import date
 
 #getting the class
@@ -149,8 +150,15 @@ def graph_plotting(bike_order, bike, drone_order, drone):
 
     title = 'Bikes and drones'
     today = date.today()
-    path = 'D:\\Documents\\GitHub\MBSE\\'
-    save_file_name = '{}{}-{}.xlsx'.format(path,title, today)
+    path = os.path.join(os.path.dirname(__file__), '..', 'excel')
+    isExist = os.path.exists(path)
+    if not isExist:
+        # Create a new directory because it does not exist
+        os.makedirs(path)
+        print(f'The new directory {path} is created!')
+    #path = 'D:\\Documents\\GitHub\MBSE\\'
+    file_name = f'{title}-{today}.xlsx'
+    save_file_name = os.path.join(path, file_name)
     print(f'Name and location for file: {save_file_name}')
     
     print(f'Saving the file')
