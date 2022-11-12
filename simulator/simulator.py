@@ -1,6 +1,4 @@
-from matplotlib.pyplot import plot
-
-from simulator.map import Map
+from experiment.test3 import Map
 from simulator.config import KITCHEN_NODE_ID
 from simulator.event import EventType, Event, from_courier
 from system.bike import Bike
@@ -11,10 +9,11 @@ from environment.order_generator import OrderGenerator
 from system.drone import DefaultDrone, DroneType1, DroneType2, DroneType3
 from utility.point import Point
 from utility.argparser import args
-from display.plot_avg_time import plot
+from display.df_cost_time import *
+from display.plot_avg_time import *
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 900
+TIME_LIMIT_MINUTES = 300
 
 # Environment
 MAP = Map()
@@ -43,7 +42,9 @@ couriers.extend(drones_default)
 couriers.extend(drones_type1)
 couriers.extend(drones_type2)
 couriers.extend(drones_type3)
-
+data1 = []
+data2 = []
+# todo: refactor drone classes, make battery charge time correct,
 
 def run_simulator():
     current_time_minutes = 0
@@ -58,6 +59,25 @@ def run_simulator():
 
     print_simulation_configuration()
 
+    #This is for the cost/time calculation
+    data_drone = []
+    data_bike = []
+    bike_orders_delivered = 0
+    drone_orders_delivered = 0
+    bike_total_delivery_time = 0
+    drone_total_delivery_time = 0
+
+    avg_bike_time = 0
+    avg_bike = []
+    avg_drone_time = 0
+    avg_drone = []
+
+    bike_orders = []
+    drone_orders = []
+    bike_time = []
+    drone_time =[]
+    charged_total = 0
+
     # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
         # Get next event
@@ -70,6 +90,7 @@ def run_simulator():
         # Charge drones
         for courier in couriers:
             if not isinstance(courier, Bike) and courier.is_standby():
+                #courier.battery = min(courier.battery_capacity, courier.battery + next_event.event_time)
                 courier.charge(next_event.event_time)
 
         # Move all couriers (bikes)
@@ -86,6 +107,21 @@ def run_simulator():
 
                 next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(), None)
 
+            case EventType.Bike:
+                event_bike = next_event.event_obj
+                bike_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
+                print(f"EVENT: Bike {event_bike.id} {bike_event_str}")
+
+                if bike_event_str == "arrived at order destination":
+                    bike_delivery_time = event_bike.time_to_destination()
+                    bike_orders_delivered += 1 #if the graph should be showing cost/order --> need to be changed, if they can carry more than one order
+                    bike_total_delivery_time += bike_delivery_time
+                    avg_bike_time = bike_total_delivery_time / bike_orders_delivered
+                    avg_bike.append((current_time_minutes, avg_bike_time))
+                    data_bike.append((current_time_minutes, bike_total_delivery_time, bike_orders_delivered ))
+                    bike_orders.append(bike_orders_delivered)
+                    bike_time.append(bike_delivery_time)
+
             case EventType.Bike | EventType.Drone:
                 event_courier = next_event.event_obj
                 drone_event_str = "arrived at order destination" if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
@@ -100,9 +136,29 @@ def run_simulator():
                     avg_time = total_delivery_time / total_orders_delivered
                     avg_order_time_data.append((current_time_minutes, avg_time))
 
+
+                if (next_event.event_obj.state == CourierState.ReturningToKitchen):
+                    drone_delivery_time = courier.time_to_destination()
+                    drone_orders_delivered += 1 #if the graph should be showing cost/order --> need to be changed, if they can carry more than one order
+                    drone_total_delivery_time += drone_delivery_time
+
+                    charged_total = abs((current_time_minutes - drone_delivery_time) - (current_time_minutes + drone_delivery_time))
+                    avg_drone_time = drone_total_delivery_time / drone_orders_delivered
+                    avg_drone.append((current_time_minutes, avg_drone_time))
+                    data_drone.append((current_time_minutes, drone_total_delivery_time, drone_orders_delivered, charged_total))
+                    drone_orders.append(drone_orders_delivered)
+                    drone_time.append((event_courier.id, drone_delivery_time))
+
         accept_orders(orders)
 
         print_state()
+
+        if current_time_minutes >= TIME_LIMIT_MINUTES:
+            #number_of_deliveries(bike_orders, drone_orders)
+            transit_time_distance(bike_time, drone_time)
+            average_time_delivery(avg_bike,'bike')
+            average_time_delivery(avg_drone,'drone')
+            graph_plotting(bike_orders, bike_cost(data_bike), drone_orders, drone_cost(data_drone))
 
         if args.PLOT:
             MAP.plot_courier_paths(couriers)
