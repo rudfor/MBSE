@@ -27,8 +27,17 @@ def number_of_deliveries(bike, drone): # input: list of all orders for both bike
     missed_drone_orders = []
 
     #change if they can take more than one delivery
-    last_bike = bike_orders.pop()
-    last_drone = drone_orders.pop()
+    if len(bike_orders) > 0:
+        last_bike = bike_orders.pop()
+    else:
+        print(f'No bikes assigned')
+        last_bike=0
+
+    if len(drone_orders) > 0:
+        last_drone = drone_orders.pop()
+    else:
+        print(f'No bikes assigned')
+        last_drone=0
 
     data = list(zip(bike_orders, drone_orders))
     df = pd.DataFrame(data, columns=['Bike orders', 'Drone Orders'])
@@ -100,10 +109,15 @@ def average_time_delivery(data,plot):
     plt.show()
 
 
-#Function Average cost of delivery for the cost of delivery for bike 
-# (Driver cost + Fuel cost + Vehicle cost) / total numbers of deliveries
-# - input: timestamp(x-axe), total order time, orders in total
 def bike_cost(data):
+    """
+    # Function Average cost of delivery for the cost of delivery for bike
+    # (Driver cost + Fuel cost + Vehicle cost) / total numbers of deliveries
+    # - input: timestamp(x-axe), total order time, orders in total
+
+    :param data:
+    :return:
+    """
     bike = Bike(1)
     delivery_wage = bike.cost_hour/60 #wage in minutes
     bike_total_orders = [i[2] for i in data]
@@ -112,10 +126,13 @@ def bike_cost(data):
     bike_total_output = [cost_bike[i]/bike_total_orders[i] for i in range(0,len(data))]
     return bike_total_output
 
-#Function for the cost of delivery for drone - input
-# (Driver cost + Fuel cost + Vehicle cost) / total numbers of deliveries
-# - input: timestamp(x-axe), total order time, orders in total
+
 def drone_cost(data):
+    """
+    Function for the cost of delivery for drone - input
+     (Driver cost + Fuel cost + Vehicle cost) / total numbers of deliveries
+     - input: timestamp(x-axe), total order time, orders in total
+    """
     drone1 = DroneType1(1)
     drone2 = DroneType2(1)
     drone3 = DroneType3(1)
@@ -123,8 +140,10 @@ def drone_cost(data):
     drone_total_orders = [i[2] for i in data]
     drone_start_cost = drone1.cost + drone2.cost + drone3.cost
     price_current = float(1.5)
-    cost_drone =  [i[3]*price_current for i in data] #price for charging the drone
-    cost_drone[0] = 0
+    cost_drone = [i[3]*price_current for i in data] #price for charging the drone
+    print(f'validating Cost_drone {cost_drone}')
+    if len(cost_drone) > 0:
+        cost_drone[0] = 0
     drone_total_output = [((cost_drone[j] + drone_start_cost )/drone_total_orders[j]) for j in range(0,len(data))]
     return drone_total_output
 

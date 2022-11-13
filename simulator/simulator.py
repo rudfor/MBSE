@@ -154,7 +154,7 @@ def run_simulator():
         print_state()
 
         if current_time_minutes >= TIME_LIMIT_MINUTES:
-            #number_of_deliveries(bike_orders, drone_orders)
+            number_of_deliveries(bike_orders, drone_orders)
             transit_time_distance(bike_time, drone_time)
             average_time_delivery(avg_bike,'bike')
             average_time_delivery(avg_drone,'drone')
