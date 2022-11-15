@@ -44,21 +44,3 @@ class System:
                     time_until_next_event_minutes = courier.time_to_destination()
                     courier_event = Event(from_courier(courier), time_until_next_event_minutes, courier)
         return courier_event
-
-    def accept_orders(self, orders):
-        # Assign orders to standby couriers (bikes), if any
-        # TODO: when drones, select drone based on order distance and drone battery life
-        for courier in self.couriers:
-            if orders and courier.is_standby():
-                order = orders[0]
-                if courier.take_order(orders[0]):
-                    del orders[0]
-                    print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {order}")
-                else:
-                    print(
-                        f"ACTION: {courier.courier_type()} {courier.id} with battery {courier.battery:.2f} minutes / {courier.avg_speed * courier.battery:.2f} meters left could not accept order {order}")
-
-        if orders:
-            print(f"ACTION: No couriers to take the following {len(orders)} order(s):")
-            for order in orders:
-                print(order)

@@ -29,6 +29,9 @@ class Stats:
         self.drone_time = []
         self.charged_total = 0
 
+        self.orders_declined_by_drones = []
+        self.total_orders_made = 0
+
     def update_bike_stats(self, current_time_minutes, event_bike):
         bike_delivery_time = event_bike.time_to_destination()
         self.bike_orders_delivered += 1  # if the graph should be showing cost/order --> need to be changed, if they can carry more than one order
