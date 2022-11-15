@@ -17,6 +17,7 @@ class BusLog:
         self.canvas.create_text(x, y, anchor=tk.SW, text=f"Order in {round(minutes, 1)} m")
         # self.bus_count = self.bus_count + 1
         self.canvas.update()
+        self.canvas.yview_moveto( y )
 
     def bus_arrived(self, people):
         x = self.x_top + 135
@@ -24,3 +25,4 @@ class BusLog:
         self.canvas.create_text(x, y, anchor=tk.SW, text=f"Order for {people} people", fill="green")
         self.bus_count = self.bus_count + 1
         self.canvas.update()
+        self.canvas.yview_moveto( y )

@@ -72,16 +72,44 @@ stat = status.Status()
 # -------------------------
 
 main = tk.Tk()
+main.geometry("1300x750")
+main.columnconfigure(0, weight=1)
+main.columnconfigure(1, weight=2)
+
+main.rowconfigure(1, weight=1)
+
 main.title("Drone vs Bike Simulation")
 main.config(bg="#fff")
 logo = tk.PhotoImage(file ="images/LogoStudent.png")
 top_frame = tk.Frame(main)
-top_frame.pack(side=tk.TOP, expand = False)
-tk.Label(top_frame, image = logo, bg = "#000007", height = 65, width = 1300).pack(side=tk.LEFT, expand = False)
-canvas1 = tk.Canvas(main, width = 300, height = 450, bg = "gray")
-canvas1.pack(side=tk.TOP, expand = False)
-canvas = tk.Canvas(main, width = 1000, height = 450, bg = "white")
-canvas.pack(side=tk.TOP, expand = False)
+tk.Label(top_frame, image = logo, bg = "#000007", height = 100, width = 1300)
+top_frame.grid(column=0, row=0, columnspan=4, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
+
+order_frame = tk.Frame(main, width=300, height=450)
+
+canvas_1 = tk.Canvas(order_frame, width = 300, height = 450, bg = "lightgray")
+canvas_1.pack(side=tk.LEFT, expand = False)
+vbar=tk.Scrollbar(order_frame, orient=tk.VERTICAL)
+
+vbar.config(command=canvas_1.yview)
+canvas_1.config(width=300, height=450)
+canvas_1.config(yscrollcommand=vbar.set)
+
+canvas_2 = tk.Canvas(main, width = 300, height = 450, bg = "lightblue")
+#canvas_2.pack(side=tk.LEFT, expand = False, anchor=tk.E)
+canvas_3 = tk.Canvas(main, width = 300, height = 450, bg = "lightgreen")
+#canvas_3.pack(side=tk.LEFT, expand = False)
+canvas_4 = tk.Canvas(main, width = 300, height = 450, bg = "green")
+#canvas_4.pack(side=tk.LEFT, expand = False)
+
+order_frame.grid(column=0, row=1, columnspan=1, rowspan=1, ipadx=20, ipady=20)
+canvas_2.grid(column=1, row=1, columnspan=1, rowspan=1, ipadx=20, ipady=20)
+canvas_3.grid(column=2, row=1, columnspan=1, rowspan=1, ipadx=20, ipady=20)
+canvas_4.grid(column=2, row=1, columnspan=1, rowspan=1, ipadx=20, ipady=20)
+
+#canvas4.pack(side=tk.TOP, expand = False)
+#canvas = tk.Canvas(main, width = 1000, height = 450, bg = "white")
+#canvas.pack(side=tk.TOP, expand = False)
 
 f = plt.Figure(figsize=(2, 2), dpi=72)
 a3 = f.add_subplot(121)
@@ -92,15 +120,16 @@ a2 = f.add_subplot(224)
 a2.plot()
 data_plot = FigureCanvasTkAgg(f, master=main)
 data_plot.get_tk_widget().config(height = 400)
-data_plot.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+#.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+data_plot.get_tk_widget().grid(column=0, row=2, columnspan=4, rowspan=1, ipadx=20, ipady=20)
+
+def Sellers(tmp_canvas, x_top, y_top):
+    return sim_libs.gui.queue_graphics.QueueGraphics("images/group.gif", 25, "Courier", SELLER_LINES, tmp_canvas, x_top, y_top)
 
 
-def Sellers(canvas1, x_top, y_top):
-    return sim_libs.gui.queue_graphics.QueueGraphics("images/group.gif", 25, "Courier", SELLER_LINES, canvas, x_top, y_top)
-
-
-def Scanners(canvas1, x_top, y_top):
-    return sim_libs.gui.queue_graphics.QueueGraphics("images/person-resized.gif", 18, "Delivered", SCANNER_LINES, canvas, x_top, y_top)
+def Scanners(tmp_canvas, x_top, y_top):
+    return sim_libs.gui.queue_graphics.QueueGraphics("images/person-resized.gif", 18, "Delivered", SCANNER_LINES, tmp_canvas, x_top, y_top)
 
 
 class ClockAndData:
@@ -110,10 +139,10 @@ class ClockAndData:
         self.x2 = x2
         self.y2 = y2
         self.canvas = canvas
-        self.train = canvas.create_rectangle(self.x1, self.y1, self.x2, self.y2, fill="#fff")
-        self.time = canvas.create_text(self.x1 + 10, self.y1 + 10, text = "Time = "+str(round(time, 1))+"m", anchor = tk.NW)
-        self.seller_wait = canvas.create_text(self.x1 + 10, self.y1 + 40, text = "Avg. Seller Wait  = "+str(calc.avg_wait(stat.seller_waits)), anchor = tk.NW)
-        self.scan_wait = canvas.create_text(self.x1 + 10, self.y1 + 70, text = "Avg. Scanner Wait = "+str(calc.avg_wait(stat.scan_waits)), anchor = tk.NW)
+        self.train = self.canvas.create_rectangle(self.x1, self.y1, self.x2, self.y2, fill="#fff")
+        self.time = self.canvas.create_text(self.x1 + 10, self.y1 + 10, text = "Time = "+str(round(time, 1))+"m", anchor = tk.NW)
+        self.seller_wait = self.canvas.create_text(self.x1 + 10, self.y1 + 40, text = "Avg. Seller Wait  = "+str(calc.avg_wait(stat.seller_waits)), anchor = tk.NW)
+        self.scan_wait = self.canvas.create_text(self.x1 + 10, self.y1 + 70, text = "Avg. Scanner Wait = "+str(calc.avg_wait(stat.scan_waits)), anchor = tk.NW)
         self.canvas.update()
 
     def tick(self, time):
@@ -121,9 +150,9 @@ class ClockAndData:
         self.canvas.delete(self.seller_wait)
         self.canvas.delete(self.scan_wait)
 
-        self.time = canvas.create_text(self.x1 + 10, self.y1 + 10, text = "Time = "+str(round(time, 1))+"m", anchor = tk.NW)
-        self.seller_wait = canvas.create_text(self.x1 + 10, self.y1 + 30, text = "Avg. Seller Wait  = "+str(calc.avg_wait(stat.seller_waits))+"m", anchor = tk.NW)
-        self.scan_wait = canvas.create_text(self.x1 + 10, self.y1 + 50, text = "Avg. Scanner Wait = "+str(calc.avg_wait(stat.scan_waits))+"m", anchor = tk.NW)
+        self.time = self.canvas.create_text(self.x1 + 10, self.y1 + 10, text = "Time = "+str(round(time, 1))+"m", anchor = tk.NW)
+        self.seller_wait = self.canvas.create_text(self.x1 + 10, self.y1 + 30, text = "Avg. Seller Wait  = "+str(calc.avg_wait(stat.seller_waits))+"m", anchor = tk.NW)
+        self.scan_wait = self.canvas.create_text(self.x1 + 10, self.y1 + 50, text = "Avg. Scanner Wait = "+str(calc.avg_wait(stat.scan_waits))+"m", anchor = tk.NW)
 
         a1.cla()
         a1.set_xlabel("Time")
@@ -143,10 +172,10 @@ class ClockAndData:
         data_plot.draw()
         self.canvas.update()
 
-bus_log = BusLog(canvas, 5, 20)
-sellers = Sellers(canvas, 340, 20)
-scanners = Scanners(canvas, 770, 20)
-clock = ClockAndData(canvas, 1100, 260, 1290, 340, 0)
+bus_log = BusLog(canvas_1, 5, 20)
+sellers = Sellers(canvas_2, 5, 20)
+scanners = Scanners(canvas_3, 5, 20)
+clock = ClockAndData(canvas_4, 5, 20, 24, 80, 0)
 #clock = sim_libs.gui.ClockAndData.ClockAndData(canvas, 1100, 260, 1290, 340, 0, data_plot, a1, a2, a3, avg_wait, seller_waits, scan_waits)
 
 # -------------------------
