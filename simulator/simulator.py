@@ -45,7 +45,6 @@ def run_simulator():
         # Charge drones
         for drone in SYSTEM.drones():
             if drone.is_standby():
-                # courier.battery = min(courier.battery_capacity, courier.battery + next_event.event_time)
                 drone.charge(next_event.event_time)
 
         # Move all couriers
@@ -82,7 +81,8 @@ def run_simulator():
         if args.PLOT:
             MAP.plot_courier_paths(SYSTEM.couriers)
 
-    STATS.plot_results()
+    if args.PLOT:
+        STATS.plot_results()
 
 
 def get_next_event(system, next_order):
@@ -115,7 +115,7 @@ def print_simulation_configuration(system):
     print(f"TIME_LIMIT_MINUTES: {TIME_LIMIT_MINUTES}")
     print(f"Kitchen at position ({KITCHEN_NODE['x']}, {KITCHEN_NODE['y']})")
     print(f"{system.num_bikes} bikes available")
-    print(f"{system.num_drones} drones available")
+    print(f"{system.num_drones()} drones available")
     print("-----------------------------------------------------------------------------------------------------------")
 
 

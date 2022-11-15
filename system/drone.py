@@ -3,6 +3,7 @@ from system.courier import Courier, CourierState
 from turtle import position
 from utility.argparser import args
 
+
 class Drone(Courier):
     def __init__(self, position):
         super().__init__(position, 0)
@@ -21,7 +22,8 @@ class Drone(Courier):
                 self.update_arrival()
 
     def take_order(self, order):
-        if self.battery >= order.distance / self.avg_speed:
+        # Drone can take order if it has sufficient battery for the round trip
+        if self.battery >= 2 * order.distance / self.avg_speed:
             self.order = order
             self.distance_to_destination = self.order.distance
             self.state = CourierState.DeliveringOrder
@@ -36,20 +38,22 @@ class Drone(Courier):
     def charge(self, dt):
         self.battery = min(self.battery_capacity, self.battery + dt * self.battery_capacity / self.charge_time)
 
+
 class DefaultDrone(Drone):
-    
+
     def __init__(self, position):
         super().__init__(position)
         self.cost = args.DRONE_COST  # DKK
         self.battery_capacity = args.DRONE_BAT_CAP
         self.battery = args.DRONE_FLIGHT_TIME  # min
-        self.range = args.DRONE_RANGE # m
+        self.range = args.DRONE_RANGE  # m
         self.charge_time = args.DRONE_CHARGE_TIME  # 60 - 90 min
         self.avg_speed = args.DRONE_AVG_SPEED  # m/s
         self.cargo_weight = args.DRONE_WEIGHT_LIMIT  # kg
 
     def courier_type(self):
         return "DefaultDrone"
+
 
 class DroneType1(Drone):
     # https://uavsystemsinternational.com/products/tarot-t-18-ready-fly-drone/
@@ -61,7 +65,7 @@ class DroneType1(Drone):
         self.battery = 25  # min
         # self.range = 3200 # m
         self.charge_time = 60  # 60 - 90 min
-        self.avg_speed = 15 / 2 * 60 # m/min  # m/s
+        self.avg_speed = 15 / 2 * 60  # m/min  # m/s
         self.cargo_weight = 8  # kg
 
     def courier_type(self):
