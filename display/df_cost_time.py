@@ -46,7 +46,7 @@ def number_of_deliveries(bike, drone): # input: list of all orders for both bike
     width = [0.1, 0.1]
     x_pos = [0,0.3]
 
-    print(df)
+    #print(df)
 
     plt.title('Number of deliveries for bike compared to drone\n',fontsize = 14, fontweight ='bold')
     x_name = ['Bicycle order', 'Drone order']
@@ -80,7 +80,7 @@ def transit_time_distance(bike, drone):# Input: bike_time, drone_time, -> simula
 
     data = list(zip( bike_transit_time, bike_transit_distance, drone_transit_time, drone_transit_distance))
     df = pd.DataFrame(data, columns=['Bike transit time','Bike distance', 'Drone transit time', 'Drone distance'])
-    print(df)
+    #print(df)
 
     #plot the graph
     plt.title('Transit time to distance for bike compared to drone\n',fontsize = 14, fontweight ='bold')
@@ -141,7 +141,7 @@ def drone_cost(data):
     drone_start_cost = drone1.cost + drone2.cost + drone3.cost
     price_current = float(1.5)
     cost_drone = [i[3]*price_current for i in data] #price for charging the drone
-    print(f'validating Cost_drone {cost_drone}')
+    #print(f'validating Cost_drone {cost_drone}')
     if len(cost_drone) > 0:
         cost_drone[0] = 0
     drone_total_output = [((cost_drone[j] + drone_start_cost )/drone_total_orders[j]) for j in range(0,len(data))]
@@ -156,7 +156,7 @@ def graph_plotting(bike_order, bike, drone_order, drone):
 
     data = list(zip(bike_timestamp, bike_data, drone_timestamp, drone_data))
     df = pd.DataFrame(data, columns=['Bike orders', 'Bike cost', 'Drone orders', 'Drone cost'])
-    print(df)
+    #print(df)
 
     #plot the graph
     plt.title('Cost/Order for bike compared to drone\n',fontsize = 14, fontweight ='bold')
