@@ -1,10 +1,14 @@
+import sys
+
 from simulator.map import Map
 from simulator.config import KITCHEN_NODE_ID
 from simulator.event import EventType, Event
 from simulator.stats import Stats
 from simulator.system import System
+from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
+from system.drone import Drone
 from utility.point import Point
 from utility.argparser import args
 
@@ -27,6 +31,13 @@ STATS = Stats()
 
 def run_simulator():
     current_time_minutes = 0
+
+    test_destinations = [ORDER_GENERATOR.generate_order(current_time_minutes).destination_node for _ in range(2)]
+    shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(test_destinations)
+    print(f"shortest_route: {shortest_route}")
+    print(f"shortest_route_distances: {shortest_route_distances}")
+    print(sum(shortest_route_distances))
+    # raise Exception("blah")
 
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
@@ -140,11 +151,33 @@ def accept_orders(current_time):
     while orders_copy and standby_couriers:
         most_urgent_order = orders_copy.pop(0)
         for courier in standby_couriers:
-            if courier.take_order(most_urgent_order):
-                standby_couriers.remove(courier)
-                orders.remove(most_urgent_order)
-                print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {most_urgent_order}, "
-                      f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
+            if isinstance(courier, Drone):
+                if courier.take_order(most_urgent_order):
+                    standby_couriers.remove(courier)
+                    orders.remove(most_urgent_order)
+                    print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {most_urgent_order}, "
+                          f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
+                    break
+            else:
+                # Keep assigning orders to bike until full
+                if courier.can_carry_more_orders():
+                    courier.hold_order(most_urgent_order)
+                    orders.remove(most_urgent_order)
+                    print(f"ACTION: {courier.courier_type()} {courier.id} holds order {most_urgent_order}, "
+                          f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
+
+                if not courier.can_carry_more_orders():
+                    standby_couriers.remove(courier)
+
+                    shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(
+                        [o.destination_node for o in courier.orders])
+
+                    print(f"ACTION: {courier.courier_type()} {courier.id} accepted orders:")
+                    for order in courier.orders:
+                        print(order)
+
+                    courier.take_orders(shortest_route, shortest_route_distances)
+
                 break
 
     if orders:

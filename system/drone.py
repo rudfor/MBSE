@@ -41,7 +41,7 @@ class Drone(Courier):
     def status(self):
         if self.is_standby():
             return f"{self.courier_type()} {self.id} standby at kitchen. Remaining battery: {self.battery:.2f} min"
-        state_str = "delivering order" if self.state == CourierState.DeliveringOrder else "returning to kitchen"
+        state_str = f"delivering order {self.order.id}" if self.state == CourierState.DeliveringOrder else "returning to kitchen"
         status_str = f"{self.courier_type()} {self.id} {state_str} with {self.distance_to_destination:.2f} m " \
                      f"/ {self.time_to_destination():.2f} min left. Remaining battery: {self.battery:.2f} min"
         return status_str
