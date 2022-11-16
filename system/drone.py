@@ -38,6 +38,13 @@ class Drone(Courier):
     def charge(self, dt):
         self.battery = min(self.battery_capacity, self.battery + dt * self.battery_capacity / self.charge_time)
 
+    def status(self):
+        if self.is_standby():
+            return f"{self.courier_type()} {self.id} standby at kitchen. Remaining battery: {self.battery:.2f} min"
+        state_str = "delivering order" if self.state == CourierState.DeliveringOrder else "returning to kitchen"
+        status_str = f"{self.courier_type()} {self.id} {state_str} with {self.distance_to_destination:.2f} m " \
+                     f"/ {self.time_to_destination():.2f} min left. Remaining battery: {self.battery:.2f} min"
+        return status_str
 
 class DefaultDrone(Drone):
 

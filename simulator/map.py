@@ -84,7 +84,6 @@ class Map:
         ox.plot._save_and_show(fig, ax)
 
     def plot_bike_paths(self, paths, colors):
-        print(paths)
         if len(paths) > 1:
             fig, ax = ox.plot.plot_graph_routes(self.G, paths, route_colors=colors, route_linewidth=4, route_alpha=0.5,
                                                 orig_dest_size=100, show=False, close=False)

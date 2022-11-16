@@ -55,5 +55,9 @@ class Courier:
         return self.distance_to_destination <= 0
 
     @abstractmethod
+    def status(self):
+        pass
+
+    @abstractmethod
     def courier_type(self):
         pass
