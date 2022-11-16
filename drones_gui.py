@@ -82,7 +82,7 @@ main.title("Drone vs Bike Simulation")
 main.config(bg="#fff")
 logo = tk.PhotoImage(file ="images/LogoStudent.png")
 top_frame = tk.Frame(main)
-tk.Label(top_frame, image = logo, bg = "#000007", height = 100, width = 1300)
+tk.Label(top_frame, image=logo, bg="#000007", height = 67, width = 1300)
 top_frame.grid(column=0, row=0, columnspan=4, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
 
 order_frame = tk.Frame(main, width=300, height=450)

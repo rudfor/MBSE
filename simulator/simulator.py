@@ -11,7 +11,7 @@ from utility.argparser import args
 from display.df_cost_time import *
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 300
+TIME_LIMIT_MINUTES = 800
 
 # Environment
 MAP = Map()
