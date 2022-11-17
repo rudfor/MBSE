@@ -132,7 +132,7 @@ class Map:
         # Calculate distances between every pair of distinct destinations
         k1 = [(KITCHEN_NODE_ID, d, self.path_length(KITCHEN_NODE_ID, d)) for d in destinations]
         k2 = [(d, KITCHEN_NODE_ID, self.path_length(d, KITCHEN_NODE_ID)) for d in destinations]
-        ds = [(d1, d2, self.path_length(d1, d2)) for d1 in destinations for d2 in destinations if d1 != d2]
+        ds = [(d1, d2, self.path_length(d1, d2)) for d1 in destinations for d2 in destinations]
         distances = k1 + k2 + ds
         print(f"distances: {distances}")
         # Store in double dict

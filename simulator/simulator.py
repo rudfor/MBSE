@@ -13,7 +13,7 @@ from utility.point import Point
 from utility.argparser import args
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 300
+TIME_LIMIT_MINUTES = args.TIME
 
 # Environment
 MAP = Map()
