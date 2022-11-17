@@ -1,16 +1,19 @@
+import itertools
 import random
-import osmnx as ox
-import networkx as nx
-import matplotlib.pyplot as plt
+from collections import defaultdict
 
+import osmnx as ox
 from simulator.config import KITCHEN_NODE_ID
 from system.bike import Bike
 from system.courier import CourierState
 from system.drone import Drone
 
+
 class Map:
     def __init__(self):
         self.G = ox.graph_from_place("Leiden, Netherlands", network_type="drive")
+        # Every node is reachable from every other node.
+        self.G = ox.utils_graph.get_largest_component(self.G, strongly=True)
         ox.distance.add_edge_lengths(self.G, precision=10)
         # Hack to make osmnx not crash
         self.G.add_edge(KITCHEN_NODE_ID, KITCHEN_NODE_ID, **{'length': 0})
@@ -29,15 +32,27 @@ class Map:
             if courier.is_standby():
                 bike_paths_colors.append("y")
                 bike_path = [KITCHEN_NODE_ID, KITCHEN_NODE_ID]
+                bike_paths.append(bike_path)
             else:
-                bike_path = ox.distance.shortest_path(self.G, KITCHEN_NODE_ID, courier.order.destination_node,
-                                                      weight='length', cpus=1)
-                if courier.state == CourierState.ReturningToKitchen:
-                    bike_paths_colors.append("r")
-                elif courier.state == CourierState.DeliveringOrder:
-                    bike_paths_colors.append("b")
+                i = 0
+                for d1, d2 in zip(courier.shortest_route, courier.shortest_route[1:]):
+                    sp = ox.distance.shortest_path(self.G, d1, d2, weight='length', cpus=1)
+                    bike_paths.append(sp)
+                    if courier.orders_delivered == i:
+                        bike_paths_colors.append("g")
+                    elif courier.orders_delivered < i:
+                        bike_paths_colors.append("b")
+                    else:
+                        bike_paths_colors.append("r")
+                    i += 1
+                # bike_path = ox.distance.shortest_path(self.G, KITCHEN_NODE_ID, courier.order.destination_node,
+                #                                       weight='length', cpus=1)
+                #     if courier.state == CourierState.ReturningToKitchen:
+                #         bike_paths_colors.append("r")
+                #     elif courier.state == CourierState.DeliveringOrder:
+                #         bike_paths_colors.append("b")
 
-            bike_paths.append(bike_path)
+
 
         if len(bike_paths) > 0:
             fig, ax = self.plot_bike_paths(bike_paths, bike_paths_colors)
@@ -64,7 +79,7 @@ class Map:
                 # args for now: we'll do that later
                 override = {"show", "save", "close"}
                 kwargs = {}  # {k: v for k, v in pg_kwargs.items() if k not in override}
-                fig, ax = ox.plot.plot_graph(self.G, show=False, save=False, close=False, **kwargs)
+                fig, ax = ox.plot.plot_graph(self.G, show=False, save=False, close=False, route_alpha=0.75, **kwargs)
             else:
                 fig = ax.figure
 
@@ -73,7 +88,7 @@ class Map:
 
             # Same config as osmnx plotting
             orig_dest_size = 100
-            route_alpha = 0.5
+            route_alpha = 0.75
             route_linewidth = 4
             # scatterplot origin and destination points (first/last nodes in route)
             x = (self.G.nodes[route[0]]["x"], self.G.nodes[route[-1]]["x"])
@@ -84,22 +99,22 @@ class Map:
         ox.plot._save_and_show(fig, ax)
 
     def plot_bike_paths(self, paths, colors):
-        print(paths)
         if len(paths) > 1:
-            fig, ax = ox.plot.plot_graph_routes(self.G, paths, route_colors=colors, route_linewidth=4, route_alpha=0.5,
+            fig, ax = ox.plot.plot_graph_routes(self.G, paths, route_colors=colors, route_linewidth=4, route_alpha=0.75,
                                                 orig_dest_size=100, show=False, close=False)
         else:
             fig, ax = ox.plot.plot_graph_route(self.G, paths[0], route_color=colors[0], route_linewidth=4,
-                                               route_alpha=0.5,
+                                               route_alpha=0.75,
                                                orig_dest_size=100, show=False, close=False)
 
-        return fig,ax
+        return fig, ax
 
     def next_destination(self):
         return random.choice(self.nodes)
 
     def path_length(self, start, end):
         shortest_path = ox.distance.shortest_path(self.G, start, end, weight='length', cpus=1)
+
         if shortest_path is None:
             return None
 
@@ -109,3 +124,36 @@ class Map:
 
     def get_node(self, node_id):
         return self.G.nodes[node_id]
+
+    # Given a list of order destinations, calculate the pairwise distances between destinations
+    # and calculate the shortest route that visits all destinations, starting and returning from/to the kitchen.
+    def shortest_route_for_delivery(self, destinations):
+        print(f"destinations: {destinations}")
+        # Calculate distances between every pair of distinct destinations
+        k1 = [(KITCHEN_NODE_ID, d, self.path_length(KITCHEN_NODE_ID, d)) for d in destinations]
+        k2 = [(d, KITCHEN_NODE_ID, self.path_length(d, KITCHEN_NODE_ID)) for d in destinations]
+        ds = [(d1, d2, self.path_length(d1, d2)) for d1 in destinations for d2 in destinations if d1 != d2]
+        distances = k1 + k2 + ds
+        print(f"distances: {distances}")
+        # Store in double dict
+        distances_dict = defaultdict(dict)
+        for d1, d2, length in distances:
+            distances_dict[d1][d2] = length
+        # Just brute force TSP, as problem size is small
+        destination_permutations = list(itertools.permutations(destinations))
+        all_routes = [[KITCHEN_NODE_ID] + list(p) + [KITCHEN_NODE_ID] for p in destination_permutations]
+        shortest_route = min(all_routes, key=lambda r: self.route_length(distances_dict, r))
+        shortest_route_distances = [distances_dict[d1][d2] for d1, d2 in zip(shortest_route, shortest_route[1:])]
+
+        # for route in all_routes:
+        #     print(route)
+        #     print("length:")
+        #     print(self.route_length(distances_dict, route))
+
+        return shortest_route, shortest_route_distances
+
+    def route_length(self, distances_dict, route):
+        total_len = 0
+        for d1, d2 in zip(route, route[1:]):
+            total_len += distances_dict[d1][d2]
+        return total_len

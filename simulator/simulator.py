@@ -1,14 +1,16 @@
+import sys
+
 from simulator.map import Map
 from simulator.config import KITCHEN_NODE_ID
 from simulator.event import EventType, Event
 from simulator.stats import Stats
 from simulator.system import System
+from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
 from system.drone import Drone
 from utility.point import Point
 from utility.argparser import args
-from display.df_cost_time import *
 
 # Simulation configuration
 TIME_LIMIT_MINUTES = 300
@@ -30,6 +32,13 @@ STATS = Stats()
 def run_simulator():
     current_time_minutes = 0
 
+    test_destinations = [ORDER_GENERATOR.generate_order(current_time_minutes).destination_node for _ in range(2)]
+    shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(test_destinations)
+    print(f"shortest_route: {shortest_route}")
+    print(f"shortest_route_distances: {shortest_route_distances}")
+    print(sum(shortest_route_distances))
+    # raise Exception("blah")
+
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
     STATS.total_orders_made += 1
@@ -43,7 +52,7 @@ def run_simulator():
 
         # Increment and print current time
         current_time_minutes += next_event.event_time
-        print(f"Time: {current_time_minutes:.2f} minutes")
+        print(f"Time: {current_time_minutes:.2f} min")
 
         # Charge drones
         for drone in SYSTEM.drones():
@@ -68,10 +77,10 @@ def run_simulator():
 
             case EventType.Bike | EventType.Drone:
                 event_courier = next_event.event_obj
-                bike_event_str = "arrived at order destination" \
+                courier_event_str = "arrived at order destination" \
                     if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
 
-                print(f"EVENT: {event_courier.courier_type()} {event_courier.id} {bike_event_str}")
+                print(f"EVENT: {event_courier.courier_type()} {event_courier.id} {courier_event_str}")
 
                 # Order delivered, update stats
                 if event_courier.state == CourierState.ReturningToKitchen:
@@ -81,7 +90,7 @@ def run_simulator():
                     elif next_event.event_type == EventType.Drone:
                         STATS.update_drone_stats(current_time_minutes, event_courier)
 
-        accept_orders()
+        accept_orders(current_time_minutes)
 
         print_state()
 
@@ -119,34 +128,63 @@ def adjust_event_for_order(time_until_next_event_minutes, time_until_next_order_
     return order_is_next_event, time_until_next_event_minutes
 
 
-def accept_orders():
-    # Assign orders to standby couriers, if any
-    # TODO: when drones, select drone based on order distance and drone battery life
-    for bike in SYSTEM.bikes:
-        if orders and bike.is_standby():
-            order = orders[0]
-            if bike.take_order(orders[0]):
-                del orders[0]
-                print(f"ACTION: {bike.courier_type()} {bike.id} accepted order {order}")
+# Assign orders to standby couriers.
+def accept_orders(current_time):
+    if not orders:
+        return
 
-    for drone in SYSTEM.drones():
-        if orders and drone.is_standby():
-            order = orders[0]
-            if drone.take_order(orders[0]):
-                del orders[0]
-                print(f"ACTION: {drone.courier_type()} {drone.id} accepted order {order}")
+    # We should attempt to assign the orders to the drones first, such that orders far away are reserved for bikes.
+    # Drones are also faster, so if both a bike and a drone can take an order, we choose the drone (for now).
+
+    # Sort orders by ascending delivery time threshold
+    orders_copy = orders.copy()
+    orders_copy.sort(key=lambda o: o.time_to_threshold(current_time))
+    # Collect standby bikes
+    bikes_copy = SYSTEM.bikes.copy()
+    bikes_copy = [b for b in bikes_copy if b.is_standby()]
+    # Collect standby drones
+    drones_copy = SYSTEM.drones().copy()
+    drones_copy = [d for d in drones_copy if d.is_standby()]
+    # All couriers, prioritize drones wrt. battery range limit
+    standby_couriers = drones_copy + bikes_copy
+    # Assign orders to couriers, starting with the most urgent order
+    while orders_copy and standby_couriers:
+        most_urgent_order = orders_copy.pop(0)
+        for courier in standby_couriers:
+            if isinstance(courier, Drone):
+                if courier.take_order(most_urgent_order):
+                    standby_couriers.remove(courier)
+                    orders.remove(most_urgent_order)
+                    print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {most_urgent_order}, "
+                          f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
+                    break
             else:
-                if order.id not in STATS.orders_declined_by_drones:
-                    STATS.orders_declined_by_drones.append(order.id)
+                # Keep assigning orders to bike until full
+                if courier.can_carry_more_orders():
+                    courier.hold_order(most_urgent_order)
+                    orders.remove(most_urgent_order)
+                    print(f"ACTION: {courier.courier_type()} {courier.id} holds order {most_urgent_order}, "
+                          f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
 
-                print(
-                    f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
-                    f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {order}")
+                if not courier.can_carry_more_orders():
+                    standby_couriers.remove(courier)
+
+                    shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(
+                        [o.destination_node for o in courier.orders])
+
+                    print(f"ACTION: {courier.courier_type()} {courier.id} accepted orders:")
+                    for order in courier.orders:
+                        print(order)
+
+                    courier.take_orders(shortest_route, shortest_route_distances)
+
+                break
 
     if orders:
         print(f"ACTION: No couriers to take the following {len(orders)} order(s):")
         for order in orders:
-            print(order)
+            # print(order)
+            print(str(order) + f", time to threshold: {order.time_to_threshold(current_time):.2f} min")
 
 
 def print_results():
@@ -158,8 +196,8 @@ def print_results():
     print(f"# drone orders delivered: {STATS.drone_orders_delivered}")
     print(f"# orders declined by drones due to insufficient battery: "
           f"{len(STATS.orders_declined_by_drones)}")
-    print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} minutes")
-    print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} minutes")
+    print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
+    print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
 
 
 def print_simulation_configuration():
@@ -173,23 +211,6 @@ def print_simulation_configuration():
 
 def print_state():
     print("STATUS:")
-
-    for bike in SYSTEM.bikes:
-        if bike.is_standby():
-            print(f"{bike.courier_type()} {bike.id} standby at kitchen")
-        else:
-            state_str = "delivering order" if bike.state == CourierState.DeliveringOrder else "returning to kitchen"
-            print(
-                f"{bike.courier_type()} {bike.id} {state_str} with {bike.distance_to_destination:.2f} meters"
-                f"/ {bike.time_to_destination():.2f} minutes left")
-
-    for drone in SYSTEM.drones():
-        if drone.is_standby():
-            print(f"{drone.courier_type()} {drone.id} standby at kitchen."
-                  f"Battery time left: {drone.battery:.2f} minutes")
-        else:
-            state_str = "delivering order" if drone.state == CourierState.DeliveringOrder else "returning to kitchen"
-            print(f"{drone.courier_type()} {drone.id} {state_str} with {drone.distance_to_destination:.2f} meters"
-                  f"/ {drone.time_to_destination():.2f} minutes left.  Battery time left: {drone.battery:.2f} minutes")
-
+    for courier in SYSTEM.couriers:
+        print(courier.status())
     print("-----------------------------------------------------------------------------------------------------------")
