@@ -166,7 +166,7 @@ def graph_plotting(bike_order, bike, drone_order, drone):
     plt.ylabel('Cost', fontsize=10)
     plt.legend()
     plt.show()
-
+    """
     title = 'Bikes and drones'
     today = date.today()
     path = os.path.join(os.path.dirname(__file__), '..', 'excel')
@@ -188,3 +188,4 @@ def graph_plotting(bike_order, bike, drone_order, drone):
         df.to_excel(save_file_name)
 
     print(f'Done')
+    """

@@ -62,6 +62,7 @@ def run_simulator():
         # Move all couriers
         for courier in SYSTEM.couriers:
             courier.move(next_event.event_time)
+            
 
         # Perform operations depending on event type
         match next_event.event_type:
@@ -197,8 +198,10 @@ def print_results():
     print(f"# orders declined by drones due to insufficient battery: "
           f"{len(STATS.orders_declined_by_drones)}")
     print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
-    print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
-
+    try:
+        print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
+    except IndexError:
+        pass
 
 def print_simulation_configuration():
     print("Simulation configuration:")

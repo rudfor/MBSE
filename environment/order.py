@@ -1,5 +1,5 @@
 from enum import Enum
-
+import random
 
 class Order:
     id_counter = 0
@@ -17,10 +17,13 @@ class Order:
         match order_type:
             case OrderType.Coffee:
                 self.delivery_time_threshold = 15
+                self.weight = 0.2
             case OrderType.WarmMeal:
                 self.delivery_time_threshold = 30
+                self.weight = random.uniform(0.2, 1.0)
             case OrderType.ColdMeal:
                 self.delivery_time_threshold = 60
+                self.weight = random.uniform(0.2, 1.0)
 
     def time_to_threshold(self, current_time):
         return self.time_ordered + self.delivery_time_threshold - current_time
