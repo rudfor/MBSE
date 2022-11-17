@@ -22,7 +22,7 @@ parser.add_argument("--drone-flight-time", type=int, default=50, dest="DRONE_FLI
 parser.add_argument("--drone-battery-capacity", type=int, default=50, dest="DRONE_BAT_CAP", help="default: 50")
 parser.add_argument("--drone-range", type=int, default=4000, dest="DRONE_RANGE", help="default: 4000 m")
 parser.add_argument("--drone-charge-time", type=int, default=60, dest="DRONE_CHARGE_TIME", help="default: 60 min")
-parser.add_argument("--drone-avg-speed", type=int, default=15, dest="DRONE_AVG_SPEED", help="default: 15 m/s")
+parser.add_argument("--drone-avg-speed", type=int, default=15 / 2 * 60, dest="DRONE_AVG_SPEED", help="default: 7.5 m/s")
 parser.add_argument("--drone-weight-limit", type=int, default=8, dest="DRONE_WEIGHT_LIMIT", help="default: 8 kg")
 parser.add_argument("-r", "--random", action="store_true", default=False, dest="RNDM", help="Choose a random seed (default: False)")
 parser.add_argument("-t", "--time", type=int, default=300, dest="TIME", help="Timeframe in minutes (default: 300)")

@@ -12,26 +12,26 @@ class Bike(Courier):
         self.order_limit = 3
         self.orders_delivered = 0
         self.shortest_route = None
+        self.num_orders_taken = 0
 
     def move(self, delta_time_minutes):
 
         if not self.is_standby():
-            #if delta_time_minutes > 0:
             self.distance_to_destination -= delta_time_minutes * self.avg_speed
 
             if self.has_arrived():
+                # If there are more orders to deliver
                 if self.state == CourierState.DeliveringOrder and self.orders:
-
+                    # Prepare next order in route
                     self.order = self.orders.pop(0)
                     self.distance_to_destination = self.order_distances.pop(0)
                     self.orders_delivered += 1
-                    print(f"orders: {self.orders}")
-                    print(f"order_distances: {self.order_distances}")
-                    print(f"dist_to_dest: {self.distance_to_destination}")
                 else:
                     if self.order_distances:
                         self.distance_to_destination = self.order_distances.pop(0)
                     self.orders_delivered = 0
+                    self.orders = []
+                    self.num_orders_taken = 0
                     self.update_arrival()
 
     def is_delivering(self):
@@ -64,21 +64,19 @@ class Bike(Courier):
         return len(self.orders) < self.order_limit
 
     def take_orders(self, shortest_route, shortest_route_distances):
+        self.num_orders_taken = len(self.orders)
         self.shortest_route = shortest_route
         orders_sorted = []
-        print(f"shortest route. {shortest_route} {shortest_route[1:-1]}")
-        print(f"shortest route distances: {shortest_route_distances}")
-        for order in self.orders:
-            print(order)
         for pos in shortest_route[1:-1]:
             orders_sorted.append([o for o in self.orders if o.destination_node == pos][0])
         self.orders = orders_sorted
-        for order in self.orders:
-            print(order)
         self.order = self.orders.pop(0)
         self.order_distances = shortest_route_distances
         self.distance_to_destination = self.order_distances.pop(0)
         self.state = CourierState.DeliveringOrder
+
+    def holds_orders(self):
+        return len(self.orders) > 0
 
     def start_delivery(self):
         self.state = CourierState.DeliveringOrder
@@ -92,7 +90,7 @@ class Bike(Courier):
     def status(self):
         if self.is_standby():
             return f"{self.courier_type()} {self.id} standby at kitchen"
-        state_str = f"delivering order {self.order.id}" if self.state == CourierState.DeliveringOrder else "returning to kitchen"
+        state_str = f"delivering order {self.order.id} ({self.orders_delivered+1}/{self.num_orders_taken})" if self.state == CourierState.DeliveringOrder else "returning to kitchen"
         status_str = f"{self.courier_type()} {self.id} {state_str} with {self.distance_to_destination:.2f} m " \
                      f"/ {self.time_to_destination():.2f} min left"
         return status_str

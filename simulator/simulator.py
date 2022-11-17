@@ -32,13 +32,6 @@ STATS = Stats()
 def run_simulator():
     current_time_minutes = 0
 
-    test_destinations = [ORDER_GENERATOR.generate_order(current_time_minutes).destination_node for _ in range(2)]
-    shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(test_destinations)
-    print(f"shortest_route: {shortest_route}")
-    print(f"shortest_route_distances: {shortest_route_distances}")
-    print(sum(shortest_route_distances))
-    # raise Exception("blah")
-
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
     STATS.total_orders_made += 1
@@ -62,6 +55,7 @@ def run_simulator():
         # Move all couriers
         for courier in SYSTEM.couriers:
             courier.move(next_event.event_time)
+            
 
         # Perform operations depending on event type
         match next_event.event_type:
@@ -145,40 +139,63 @@ def accept_orders(current_time):
     # Collect standby drones
     drones_copy = SYSTEM.drones().copy()
     drones_copy = [d for d in drones_copy if d.is_standby()]
-    # All couriers, prioritize drones wrt. battery range limit
-    standby_couriers = drones_copy + bikes_copy
-    # Assign orders to couriers, starting with the most urgent order
-    while orders_copy and standby_couriers:
-        most_urgent_order = orders_copy.pop(0)
-        for courier in standby_couriers:
-            if isinstance(courier, Drone):
-                if courier.take_order(most_urgent_order):
-                    standby_couriers.remove(courier)
-                    orders.remove(most_urgent_order)
-                    print(f"ACTION: {courier.courier_type()} {courier.id} accepted order {most_urgent_order}, "
-                          f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
-                    break
-            else:
-                # Keep assigning orders to bike until full
-                if courier.can_carry_more_orders():
-                    courier.hold_order(most_urgent_order)
-                    orders.remove(most_urgent_order)
-                    print(f"ACTION: {courier.courier_type()} {courier.id} holds order {most_urgent_order}, "
-                          f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
-
-                if not courier.can_carry_more_orders():
-                    standby_couriers.remove(courier)
-
-                    shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(
-                        [o.destination_node for o in courier.orders])
-
-                    print(f"ACTION: {courier.courier_type()} {courier.id} accepted orders:")
-                    for order in courier.orders:
-                        print(order)
-
-                    courier.take_orders(shortest_route, shortest_route_distances)
-
+    # Assign orders to couriers, starting with the most urgent order.
+    # Prioritize drones wrt. battery range limit.
+    orders_taken = []
+    # Try to assign orders to drones
+    for most_urgent_order in orders_copy:
+        if not drones_copy:
+            break
+        # Try to assign the order to a drone
+        for drone in drones_copy:
+            if drone.take_order(most_urgent_order):
+                drones_copy.remove(drone)
+                orders_taken.append(most_urgent_order)
+                orders.remove(most_urgent_order)
+                print(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
+                      f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
                 break
+            else:
+                if most_urgent_order.id not in STATS.orders_declined_by_drones:
+                    STATS.orders_declined_by_drones.append(most_urgent_order.id)
+
+                print(
+                    f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
+                    f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order}")
+
+    # Remove orders taken by drones
+    for o in orders_taken:
+        orders_copy.remove(o)
+
+    # Assign remaining orders to bikes
+    if orders_copy:
+        for bike in bikes_copy:
+            if not orders_copy:
+                break
+            # Keep assigning orders to bike until full
+            while bike.can_carry_more_orders() and orders_copy:
+                most_urgent_order = orders_copy.pop(0)
+                bike.hold_order(most_urgent_order)
+                orders.remove(most_urgent_order)
+                print(f"ACTION: {bike.courier_type()} {bike.id} holds order {most_urgent_order}, "
+                      f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
+
+            break
+
+    # Calculate delivery routes for bikes with orders
+    for bike in bikes_copy:
+        if bike.holds_orders():
+            bikes_copy.remove(bike)
+
+            shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(
+                [o.destination_node for o in bike.orders])
+
+            print(f"ACTION: {bike.courier_type()} {bike.id} accepted orders:")
+            for order in bike.orders:
+                print(order)
+
+            # Start the delivery
+            bike.take_orders(shortest_route, shortest_route_distances)
 
     if orders:
         print(f"ACTION: No couriers to take the following {len(orders)} order(s):")
@@ -197,8 +214,10 @@ def print_results():
     print(f"# orders declined by drones due to insufficient battery: "
           f"{len(STATS.orders_declined_by_drones)}")
     print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
-    print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
-
+    try:
+        print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
+    except IndexError:
+        pass
 
 def print_simulation_configuration():
     print("Simulation configuration:")
