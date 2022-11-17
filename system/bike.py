@@ -17,12 +17,12 @@ class Bike(Courier):
     def move(self, delta_time_minutes):
 
         if not self.is_standby():
-            #if delta_time_minutes > 0:
             self.distance_to_destination -= delta_time_minutes * self.avg_speed
 
             if self.has_arrived():
+                # If there are more orders to deliver
                 if self.state == CourierState.DeliveringOrder and self.orders:
-
+                    # Prepare next order in route
                     self.order = self.orders.pop(0)
                     self.distance_to_destination = self.order_distances.pop(0)
                     self.orders_delivered += 1

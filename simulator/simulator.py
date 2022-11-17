@@ -154,6 +154,13 @@ def accept_orders(current_time):
                 print(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
                       f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
                 break
+            else:
+                if most_urgent_order.id not in STATS.orders_declined_by_drones:
+                    STATS.orders_declined_by_drones.append(most_urgent_order.id)
+
+                print(
+                    f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
+                    f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order}")
 
     # Remove orders taken by drones
     for o in orders_taken:
