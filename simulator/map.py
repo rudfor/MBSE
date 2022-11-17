@@ -128,13 +128,11 @@ class Map:
     # Given a list of order destinations, calculate the pairwise distances between destinations
     # and calculate the shortest route that visits all destinations, starting and returning from/to the kitchen.
     def shortest_route_for_delivery(self, destinations):
-        print(f"destinations: {destinations}")
         # Calculate distances between every pair of distinct destinations
         k1 = [(KITCHEN_NODE_ID, d, self.path_length(KITCHEN_NODE_ID, d)) for d in destinations]
         k2 = [(d, KITCHEN_NODE_ID, self.path_length(d, KITCHEN_NODE_ID)) for d in destinations]
         ds = [(d1, d2, self.path_length(d1, d2)) for d1 in destinations for d2 in destinations if d1 != d2]
         distances = k1 + k2 + ds
-        print(f"distances: {distances}")
         # Store in double dict
         distances_dict = defaultdict(dict)
         for d1, d2, length in distances:
