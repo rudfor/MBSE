@@ -1,5 +1,12 @@
+from random import random
+
 from system.courier import Courier, CourierState
 from utility.argparser import args
+from utility.constants import BIKE_BREAKDOWN_DURATION
+
+
+def breaks_down():
+    return random() < args.BREAKDOWN_RATE
 
 
 class Bike(Courier):
@@ -13,11 +20,12 @@ class Bike(Courier):
         self.orders_delivered = 0
         self.shortest_route = None
         self.num_orders_taken = 0
+        self.has_breakdown = False
 
-    def move(self, delta_time_minutes):
+    def move(self, delta_time_minutes, traffic_factor, weather_factor):
 
         if not self.is_standby():
-            self.distance_to_destination -= delta_time_minutes * self.avg_speed
+            self.distance_to_destination -= delta_time_minutes * self.avg_speed * traffic_factor * weather_factor
 
             if self.has_arrived():
                 # If there are more orders to deliver
@@ -75,6 +83,10 @@ class Bike(Courier):
         self.distance_to_destination = self.order_distances.pop(0)
         self.state = CourierState.DeliveringOrder
 
+        if breaks_down():
+            print(f"Bike {self.id} breaks down along route, adding distance to simulate.")
+            self.distance_to_destination += BIKE_BREAKDOWN_DURATION * self.avg_speed
+
     def holds_orders(self):
         return len(self.orders) > 0
 
@@ -90,7 +102,14 @@ class Bike(Courier):
     def status(self):
         if self.is_standby():
             return f"{self.courier_type()} {self.id} standby at kitchen"
-        state_str = f"delivering order {self.order.id} ({self.orders_delivered+1}/{self.num_orders_taken})" if self.state == CourierState.DeliveringOrder else "returning to kitchen"
+
+        if self.state == CourierState.DeliveringOrder:
+            state_str = f"delivering order {self.order.id} ({self.orders_delivered + 1}/{self.num_orders_taken})"
+        elif self.state == CourierState.ReturningToKitchen:
+            state_str = "returning to kitchen"
+
         status_str = f"{self.courier_type()} {self.id} {state_str} with {self.distance_to_destination:.2f} m " \
                      f"/ {self.time_to_destination():.2f} min left"
         return status_str
+
+

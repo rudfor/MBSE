@@ -14,9 +14,9 @@ class Drone(Courier):
         self.avg_speed = None  # m/min  # m/s
         self.cargo_weight = None  # kg
 
-    def move(self, delta_time_minutes):
+    def move(self, delta_time_minutes, traffic_factor, weather_factor):
         if not self.is_standby():
-            self.distance_to_destination -= delta_time_minutes * self.avg_speed
+            self.distance_to_destination -= delta_time_minutes * self.avg_speed * weather_factor
             if self.state == CourierState.DeliveringOrder:
                 self.battery -= (delta_time_minutes * (1 + (self.order.weight / 2)))
                 #self.battery -= delta_time_minutes

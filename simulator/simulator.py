@@ -29,6 +29,14 @@ orders = []
 STATS = Stats()
 
 
+def get_traffic_factor(current_time_minutes):
+    return 1
+
+
+def get_weather_factor(current_time_minutes):
+    return 1
+
+
 def run_simulator():
     current_time_minutes = 0
 
@@ -52,9 +60,11 @@ def run_simulator():
             if drone.is_standby():
                 drone.charge(next_event.event_time)
 
+        traffic_factor = get_traffic_factor(current_time_minutes)
+        weather_factor = get_weather_factor(current_time_minutes)
         # Move all couriers
         for courier in SYSTEM.couriers:
-            courier.move(next_event.event_time)
+            courier.move(next_event.event_time, traffic_factor, weather_factor)
             
 
         # Perform operations depending on event type
