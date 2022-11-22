@@ -42,32 +42,43 @@ stat = status.Status()
 
 main = tk.Tk()
 main.geometry("1300x750")
-main.columnconfigure(0, weight=3)
+main.columnconfigure(0, weight=5)
 main.columnconfigure(1, weight=2)
 main.columnconfigure(2, weight=2)
 main.columnconfigure(3, weight=2)
+main.columnconfigure(4, weight=2)
 
 main.rowconfigure(0, weight=1)
 main.rowconfigure(1, weight=1)
 main.rowconfigure(2, weight=1)
+main.rowconfigure(3, weight=1)
 logo = tk.PhotoImage(file ="images/LogoStudent.png")
 
 main.title("Drone vs Bike Simulation")
 main.config(bg="#fff")
 #rectangle_1 = tk.Label(root, text="Rectangle 1", bg="green", fg="white")
 title_bar = tk.Label(main, image = logo, bg = "#000007", height = 65, width = 1300)
-title_bar.grid(column=0, row=0, columnspan=4, ipadx=20, ipady=20, sticky="NSEW")
+title_bar.grid(column=0, row=0, columnspan=5, ipadx=20, ipady=20, sticky="NSEW")
 #top_frame = tk.Frame(main)
 #tk.Label(top_frame, image = logo, bg = "#000007", height = 100, width = 1300)
 #top_frame.grid(column=0, row=0, columnspan=4, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
 # SETUP SCROLLBAR:
-order_frame = tk.Frame(main, bg='lightgray', bd=2, relief=tk.FLAT, width = 150, height = 300)
-order_frame.grid(column=0, row=1, sticky=tk.NW)
+order_frame = tk.Frame(main, bg='lightgray', bd=2, relief=tk.FLAT, width = 200, height=800)
+order_frame.grid(column=0, rowspan=3, row=1, sticky=tk.NW)
 
-canvas_01 = tk.Canvas(order_frame, bg = "lightblue")
+canvas_01 = tk.Canvas(order_frame, bg="lightblue")
 canvas_01.grid(column=1, row=0)
 vsbar = tk.Scrollbar(order_frame, orient=tk.VERTICAL, command=canvas_01.yview)
 vsbar.grid(row=0, column=0, sticky=tk.NS)
+
+bbox = canvas_01.bbox(tk.ALL)  # Get bounding box of canvas with Buttons.
+
+# Define the scrollable region as entire canvas with only the desired
+# number of rows and columns displayed.
+#w, h = bbox[2]-bbox[1], bbox[3]-bbox[1]
+#dw, dh = int((w/COLS) * COLS_DISP), int((h/ROWS) * ROWS_DISP)
+canvas_01.configure(scrollregion=bbox, width=200, height=800)
+
 canvas_01.configure(yscrollcommand=vsbar.set)
 
 canvas_02 = tk.Canvas(main, width = 300, height = 450, bg = "lightgreen")
@@ -87,10 +98,10 @@ canvas_2 = tk.Canvas(main, width = 300, height = 450, bg = "lightblue")
 canvas_3 = tk.Canvas(main, width = 300, height = 450, bg = "lightgreen")
 canvas_4 = tk.Canvas(main, width = 300, height = 450, bg = "green")
 
-order_frame.grid(column=0, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
-canvas_2.grid(column=1, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
-canvas_3.grid(column=2, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
-canvas_4.grid(column=3, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
+order_frame.grid(column=1, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
+canvas_2.grid(column=2, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
+canvas_3.grid(column=3, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
+canvas_4.grid(column=4, row=2, columnspan=1, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
 
 #canvas4.pack(side=tk.TOP, expand = False)
 #canvas = tk.Canvas(main, width = 1000, height = 450, bg = "white")
@@ -107,7 +118,7 @@ data_plot = FigureCanvasTkAgg(f, master=main)
 data_plot.get_tk_widget().config(height = 400)
 
 #.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-data_plot.get_tk_widget().grid(column=0, row=3, columnspan=4, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
+data_plot.get_tk_widget().grid(column=1, row=3, columnspan=4, rowspan=1, ipadx=20, ipady=20, sticky="NSEW")
 
 order_log = OrdersLog(canvas_01, 5, 20)
 sellers2 = SimEnv.sellers(canvas_02, config, 5, 20)
