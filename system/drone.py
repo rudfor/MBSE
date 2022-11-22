@@ -71,7 +71,6 @@ class DroneType1(Drone):
     def courier_type(self):
         return "DroneType1"
 
-
 class DroneType2(Drone):
     # https://uavsystemsinternational.com/products/aurelia-x6-max-ready-to-fly
 

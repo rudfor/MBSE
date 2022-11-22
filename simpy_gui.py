@@ -22,6 +22,9 @@ import matplotlib.pyplot as plt
 
 import tkinter as tk
 from PIL import ImageTk
+from sim_libs.gui.orders import OrdersLog as OrdersLog
+from sim_libs.gui.orders import Orders as Orders
+
 
 # -------------------------
 #  CONFIGURATION
@@ -401,6 +404,7 @@ seller_lines = [ simpy.Resource(env, capacity = SELLERS_PER_LINE) for _ in range
 scanner_lines = [ simpy.Resource(env, capacity = SCANNERS_PER_LINE) for _ in range(SCANNER_LINES) ]
 
 env.process(bus_arrival(env, seller_lines, scanner_lines))
+#env.process(Orders.order_arrival(env, stat, config, seller_lines, scanner_lines))
 env.process(create_clock(env))
 env.run(until = 30)
 
