@@ -30,6 +30,7 @@ class Stats:
         self.charged_total = 0
 
         self.orders_declined_by_drones = []
+        self.orders_declined_by_drones_range = []
         self.total_orders_made = 0
 
     def update_bike_stats(self, current_time_minutes, event_bike):

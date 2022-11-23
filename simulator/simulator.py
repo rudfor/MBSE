@@ -154,24 +154,32 @@ def accept_orders(current_time):
     orders_taken = []
     # Try to assign orders to drones
     for most_urgent_order in orders_copy:
+        order_flag = False
+        within_range = False
         if not drones_copy:
             break
         # Try to assign the order to a drone
         for drone in drones_copy:
-            if drone.take_order(most_urgent_order):
-                drones_copy.remove(drone)
-                orders_taken.append(most_urgent_order)
-                orders.remove(most_urgent_order)
-                print(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
-                      f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
-                break
-            else:
-                if most_urgent_order.id not in STATS.orders_declined_by_drones:
-                    STATS.orders_declined_by_drones.append(most_urgent_order.id)
+            if drone.within_range(most_urgent_order):
+                within_range = True
+                if drone.take_order(most_urgent_order):
+                    order_flag = True
+                    #drones_copy.remove(drone)
+                    orders_taken.append(most_urgent_order)
+                    orders.remove(most_urgent_order)
+                    print(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
+                        f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
+                    break
 
-                print(
-                    f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
-                    f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order}")
+        if not within_range and most_urgent_order.id not in STATS.orders_declined_by_drones_range:
+            STATS.orders_declined_by_drones_range.append(most_urgent_order.id)
+
+        if not order_flag and most_urgent_order.id not in STATS.orders_declined_by_drones:
+            STATS.orders_declined_by_drones.append(most_urgent_order.id)
+
+            print(
+                f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
+                f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order}")
 
     # Remove orders taken by drones
     for o in orders_taken:
@@ -223,8 +231,10 @@ def print_results():
     print(f"# drone orders delivered: {STATS.drone_orders_delivered}")
     print(f"# orders declined by drones due to insufficient battery: "
           f"{len(STATS.orders_declined_by_drones)}")
-    print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
+    print(f"# orders declined by drones due to distance: "
+          f"{len(STATS.orders_declined_by_drones_range)}")
     try:
+        print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
         print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
     except IndexError:
         pass

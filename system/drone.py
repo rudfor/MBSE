@@ -13,6 +13,7 @@ class Drone(Courier):
         self.charge_time = None  # 60 - 90 min
         self.avg_speed = None  # m/min  # m/s
         self.cargo_weight = None  # kg
+        self.range = None
 
     def move(self, delta_time_minutes, traffic_factor, weather_factor):
         if not self.is_standby():
@@ -27,6 +28,8 @@ class Drone(Courier):
 
     def take_order(self, order):
         # Drone can take order if it has sufficient battery for the round trip
+        if not self.is_standby():
+            return False
         if self.battery >= (2 * order.distance / self.avg_speed) * (1 + (order.weight / 2)):
             self.order = order
             self.distance_to_destination = self.order.distance
@@ -34,6 +37,9 @@ class Drone(Courier):
             return True
         else:
             return False
+
+    def within_range(self, order):
+        return order.distance <= self.range
 
     @abstractmethod
     def courier_type(self):
@@ -74,7 +80,7 @@ class DroneType1(Drone):
         self.cost = 38062  # DKK
         self.battery_capacity = 25
         self.battery = 25  # min
-        # self.range = 3200 # m
+        self.range = 3200 # m
         self.charge_time = 60  # 60 - 90 min
         self.avg_speed = 15 / 2 * 60  # m/min  # m/s
         self.cargo_weight = 8  # kg
@@ -91,7 +97,7 @@ class DroneType2(Drone):
         self.cost = 60.249  # DKK
         self.battery_capacity = 70
         self.battery = 70  # min
-        # self.range = 5000 # m
+        self.range = 5000 # m
         self.charge_time = 90  # 60 - 90 min
         self.avg_speed = 15.5 / 2 * 60  # m/min  # m/s
         self.cargo_weight = 6  # kg
@@ -108,7 +114,7 @@ class DroneType3(Drone):
         self.cost = 75.502  # DKK
         self.battery_capacity = 70
         self.battery = 70  # min
-        # self.range = 15000 # m
+        self.range = 15000 # m
         self.charge_time = 90  # 60 - 90 min
         self.avg_speed = 15 / 2 * 60  # m/min  # m/s
         self.cargo_weight = 11  # kg
