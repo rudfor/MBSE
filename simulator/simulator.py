@@ -11,9 +11,10 @@ from environment.order_generator import OrderGenerator
 from system.drone import Drone
 from utility.point import Point
 from utility.argparser import args
+import random
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 300
+TIME_LIMIT_MINUTES = 24 * 60 + 30
 
 # Environment
 MAP = Map()
@@ -28,17 +29,29 @@ orders = []
 # Statistics tracking
 STATS = Stats()
 
+def day_no(current_time_minutes):
+    return int(current_time_minutes) // (24 * 60)
+
 
 def get_traffic_factor(current_time_minutes):
     return 1
 
 
-def get_weather_factor(current_time_minutes):
-    return 1
+def get_rain_interval():
+    # It rains ~183 days / year in Leiden
+    rain_stat = 183 / 365
+    rain_t1 = random.uniform(0, 24 * 60)
+    rain_t2 = random.uniform(0, 24 * 60)
+    if random.random() < rain_stat:
+        return min(rain_t1, rain_t2), max(rain_t1, rain_t2)
+    return None
 
 
 def run_simulator():
     current_time_minutes = 0
+    weather_factor = 1
+    rain_interval = None
+    day = -1
 
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
@@ -61,10 +74,21 @@ def run_simulator():
                 drone.charge(next_event.event_time)
 
         traffic_factor = get_traffic_factor(current_time_minutes)
-        weather_factor = get_weather_factor(current_time_minutes)
+        
+        if day_no(current_time_minutes) > day:
+            day += 1
+            rain_interval = get_rain_interval()
+        
+        print(f"DAY: {day}")
+        
+        if rain_interval and rain_interval[0] <= current_time_minutes % (24 * 60) and current_time_minutes % (24 * 60) <= rain_interval[1]:
+            weather_factor = 0.8
+        else:
+            weather_factor = 1
+
         # Move all couriers
         for courier in SYSTEM.couriers:
-            courier.move(next_event.event_time, traffic_factor, weather_factor)
+            courier.move(next_event.event_time, traffic_factor, 0.8)
             
 
         # Perform operations depending on event type

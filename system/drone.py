@@ -17,10 +17,10 @@ class Drone(Courier):
 
     def move(self, delta_time_minutes, traffic_factor, weather_factor):
         if not self.is_standby():
+            print(f"foo: {delta_time_minutes * self.avg_speed * weather_factor}")
             self.distance_to_destination -= delta_time_minutes * self.avg_speed * weather_factor
             if self.state == CourierState.DeliveringOrder:
                 self.battery -= (delta_time_minutes * (1 + (self.order.weight / 2)))
-                #self.battery -= delta_time_minutes
             else:
                 self.battery -= delta_time_minutes 
             if self.has_arrived():
