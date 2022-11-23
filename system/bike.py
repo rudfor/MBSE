@@ -21,11 +21,15 @@ class Bike(Courier):
         self.shortest_route = None
         self.num_orders_taken = 0
         self.has_breakdown = False
+        self.speed = self.avg_speed
+
+    def set_speed(self, weather_factor, traffic_factor):
+        self.speed = self.avg_speed * weather_factor * traffic_factor
 
     def move(self, delta_time_minutes, traffic_factor, weather_factor):
 
         if not self.is_standby():
-            self.distance_to_destination -= delta_time_minutes * self.avg_speed * traffic_factor * weather_factor
+            self.distance_to_destination -= delta_time_minutes * self.speed
 
             if self.has_arrived():
                 # If there are more orders to deliver
@@ -46,7 +50,7 @@ class Bike(Courier):
         return self.order is not None
 
     def time_to_destination(self):
-        return self.distance_to_destination / self.avg_speed
+        return self.distance_to_destination / self.speed
 
     def is_standby(self):
         return self.state == CourierState.Standby

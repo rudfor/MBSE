@@ -14,11 +14,14 @@ class Drone(Courier):
         self.avg_speed = None  # m/min  # m/s
         self.cargo_weight = None  # kg
         self.range = None
+        self.speed = None
+    
+    def set_speed(self, weather_factor, traffic_factor):
+        self.speed = self.avg_speed * weather_factor
 
     def move(self, delta_time_minutes, traffic_factor, weather_factor):
         if not self.is_standby():
-            print(f"foo: {delta_time_minutes * self.avg_speed * weather_factor}")
-            self.distance_to_destination -= delta_time_minutes * self.avg_speed * weather_factor
+            self.distance_to_destination -= delta_time_minutes * self.speed
             if self.state == CourierState.DeliveringOrder:
                 self.battery -= (delta_time_minutes * (1 + (self.order.weight / 2)))
             else:
@@ -37,6 +40,9 @@ class Drone(Courier):
             return True
         else:
             return False
+    
+    def time_to_destination(self):
+        return self.distance_to_destination / self.speed
 
     def within_range(self, order):
         return order.distance <= self.range
@@ -67,6 +73,7 @@ class DefaultDrone(Drone):
         self.charge_time = args.DRONE_CHARGE_TIME  # 60 - 90 min
         self.avg_speed = args.DRONE_AVG_SPEED  # m/s
         self.cargo_weight = args.DRONE_WEIGHT_LIMIT  # kg
+        self.speed = self.avg_speed
 
     def courier_type(self):
         return "DefaultDrone"

@@ -14,7 +14,7 @@ from utility.argparser import args
 import random
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 24 * 60 + 30
+TIME_LIMIT_MINUTES = 24 * 60
 
 # Environment
 MAP = Map()
@@ -61,8 +61,27 @@ def run_simulator():
 
     # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
+
+        traffic_factor = get_traffic_factor(current_time_minutes)
+        
+        if day_no(current_time_minutes) > day:
+            day += 1
+            rain_interval = get_rain_interval()
+            print(rain_interval)
+        
+        if rain_interval and rain_interval[0] <= current_time_minutes % (24 * 60) and current_time_minutes % (24 * 60) <= rain_interval[1]:
+            weather_factor = 0.8
+        else:
+            weather_factor = 1
+
+        for courier in SYSTEM.couriers:
+            courier.set_speed(weather_factor, traffic_factor)
+
         # Get next event
         next_event = get_next_event(SYSTEM, next_order)
+
+        if weather_factor != 1:
+            print("RAINY")
 
         # Increment and print current time
         current_time_minutes += next_event.event_time
@@ -73,22 +92,9 @@ def run_simulator():
             if drone.is_standby():
                 drone.charge(next_event.event_time)
 
-        traffic_factor = get_traffic_factor(current_time_minutes)
-        
-        if day_no(current_time_minutes) > day:
-            day += 1
-            rain_interval = get_rain_interval()
-        
-        print(f"DAY: {day}")
-        
-        if rain_interval and rain_interval[0] <= current_time_minutes % (24 * 60) and current_time_minutes % (24 * 60) <= rain_interval[1]:
-            weather_factor = 0.8
-        else:
-            weather_factor = 1
-
         # Move all couriers
         for courier in SYSTEM.couriers:
-            courier.move(next_event.event_time, traffic_factor, 0.8)
+            courier.move(next_event.event_time, traffic_factor, weather_factor)
             
 
         # Perform operations depending on event type
