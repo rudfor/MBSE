@@ -1,4 +1,7 @@
 import sys
+import csv
+import pandas as pd
+import matplotlib.pyplot as plt
 
 from simulator.map import Map
 from simulator.config import KITCHEN_NODE_ID
@@ -31,18 +34,27 @@ STATS = Stats()
 
 def run_simulator():
     current_time_minutes = 0
+    csv_file = 'eventlog.csv'
 
     # Let's always start with an order, for testing purposes
     next_order = Event(EventType.Order, 0, None)
-    STATS.total_orders_made += 1
+    STATS.total_orders_made
 
     print_simulation_configuration()
-
+    f = open(csv_file, 'w')
+    #f.write(f'time, order, drone, bike\n')
+    #writer = csv.writer(f)
     # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
         # Get next event
         next_event = get_next_event(SYSTEM, next_order)
+        et = next_event.get_type()
+        print(f'{next_event.event_type}:{next_event.get_type()}:{next_event.event_type}')
+        order = 1 if et == 'Order' else 0
+        drone = 1 if et == 'Drone' else 0
+        bike  = 1 if et == 'Bike' else 0
 
+        f.write(f'{current_time_minutes}, {order}, {drone}, {bike} \n')
         # Increment and print current time
         current_time_minutes += next_event.event_time
         print(f"Time: {current_time_minutes:.2f} min")
@@ -56,7 +68,6 @@ def run_simulator():
         for courier in SYSTEM.couriers:
             courier.move(next_event.event_time)
             
-
         # Perform operations depending on event type
         match next_event.event_type:
             case EventType.Order:
@@ -90,6 +101,19 @@ def run_simulator():
 
         if args.PLOT:
             MAP.plot_courier_paths(SYSTEM.couriers)
+
+    f.close()
+
+    #f.write(f'time, order, drone, bike\n')
+    colnames = ['time', 'order', 'drone', 'bike']
+    colnamesplot = ['order', 'drone', 'bike']
+
+    df = pd.read_csv(csv_file, names=colnames, header=None)
+    df.plot(x='time', y=colnamesplot)
+    df.plot.bar(y=colnamesplot, stacked = True)
+    df.plot(y=colnamesplot)
+
+    plt.show()
 
     print_results()
     print()
@@ -205,6 +229,7 @@ def accept_orders(current_time):
 
 
 def print_results():
+    print_simulation_configuration()
     print("Simulation results:")
     print(f"# orders made: {STATS.total_orders_made}")
     print(f"# orders in end queue: {len(orders)}")
@@ -213,7 +238,10 @@ def print_results():
     print(f"# drone orders delivered: {STATS.drone_orders_delivered}")
     print(f"# orders declined by drones due to insufficient battery: "
           f"{len(STATS.orders_declined_by_drones)}")
-    print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
+    try:
+        print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
+    except IndexError:
+        pass
     try:
         print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
     except IndexError:

@@ -11,6 +11,15 @@ class Event:
         self.event_time = event_time
         self.event_obj = event_obj
 
+    def get_type(self):
+        match self.event_type:
+            case EventType.Order:
+                return 'Order'
+            case EventType.Bike:
+                return 'Bike'
+            case EventType.Drone:
+                return 'Drone'
+
 
 def from_courier(courier):
     if isinstance(courier, Bike):
