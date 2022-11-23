@@ -19,7 +19,6 @@ class Courier:
         self.state = CourierState.Standby
         self.id = Courier.id_counter
         Courier.id_counter += 1
-    
 
     def move(self, delta_time_minutes):
         if not self.is_standby():
@@ -53,6 +52,10 @@ class Courier:
 
     def has_arrived(self):
         return self.distance_to_destination <= 0
+
+    @abstractmethod
+    def status(self):
+        pass
 
     @abstractmethod
     def courier_type(self):

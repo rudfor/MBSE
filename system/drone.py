@@ -17,13 +17,17 @@ class Drone(Courier):
     def move(self, delta_time_minutes):
         if not self.is_standby():
             self.distance_to_destination -= delta_time_minutes * self.avg_speed
-            self.battery -= delta_time_minutes
+            if self.state == CourierState.DeliveringOrder:
+                self.battery -= (delta_time_minutes * (1 + (self.order.weight / 2)))
+                #self.battery -= delta_time_minutes
+            else:
+                self.battery -= delta_time_minutes 
             if self.has_arrived():
                 self.update_arrival()
 
     def take_order(self, order):
         # Drone can take order if it has sufficient battery for the round trip
-        if self.battery >= 2 * order.distance / self.avg_speed:
+        if self.battery >= (2 * order.distance / self.avg_speed) * (1 + (order.weight / 2)):
             self.order = order
             self.distance_to_destination = self.order.distance
             self.state = CourierState.DeliveringOrder
@@ -38,6 +42,13 @@ class Drone(Courier):
     def charge(self, dt):
         self.battery = min(self.battery_capacity, self.battery + dt * self.battery_capacity / self.charge_time)
 
+    def status(self):
+        if self.is_standby():
+            return f"{self.courier_type()} {self.id} standby at kitchen. Remaining battery: {self.battery:.2f} min"
+        state_str = f"delivering order {self.order.id}" if self.state == CourierState.DeliveringOrder else "returning to kitchen"
+        status_str = f"{self.courier_type()} {self.id} {state_str} with {self.distance_to_destination:.2f} m " \
+                     f"/ {self.time_to_destination():.2f} min left. Remaining battery: {self.battery:.2f} min"
+        return status_str
 
 class DefaultDrone(Drone):
 

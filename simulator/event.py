@@ -2,7 +2,7 @@ from enum import Enum
 
 from system.bike import Bike
 from system.courier import Courier
-from system.drone import DroneType1, DroneType2, DroneType3
+from system.drone import Drone
 
 
 class Event:
@@ -15,7 +15,7 @@ class Event:
 def from_courier(courier):
     if isinstance(courier, Bike):
         return EventType.Bike
-    elif isinstance(courier, DroneType1) or isinstance(courier, DroneType2) or isinstance(courier, DroneType3):
+    elif isinstance(courier, Drone):
         return EventType.Drone
 
 

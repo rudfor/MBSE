@@ -1,6 +1,8 @@
+import random
+
 import numpy
 
-from environment.order import Order
+from environment.order import Order, OrderType
 from simulator.config import KITCHEN_NODE_ID
 from utility.point import Point
 from utility.argparser import args
@@ -10,7 +12,7 @@ class OrderGenerator:
     def __init__(self, osmnx_map):
         self.map = osmnx_map
         if not args.RNDM:
-            numpy.random.seed(2223)
+            numpy.random.seed(args.SEED)
 
     # Return a list of orders when time dt has elapsed
     # def advance(self, dt):
@@ -25,7 +27,9 @@ class OrderGenerator:
             distance = self.map.path_length(KITCHEN_NODE_ID, order_end)
 
         order_end_node = self.map.get_node(order_end)
-        return Order(Point(order_end_node['x'], order_end_node['y']), time_ordered, None, distance, order_end)
+        p = Point(order_end_node['x'], order_end_node['y'])
+        order_type = random.choice([OrderType.Coffee, OrderType.WarmMeal, OrderType.ColdMeal])
+        return Order(p, time_ordered, None, distance, order_end, order_type)
 
     def generate_time_until_order(self):
-        return max(0, numpy.random.normal(loc=10, scale=2.0, size=None))
+        return max(0, numpy.random.normal(loc=5, scale=2.0, size=None))
