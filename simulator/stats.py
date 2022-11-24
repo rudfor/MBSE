@@ -68,9 +68,9 @@ class Stats:
 
     def plot_results(self):
         pass
-        #number_of_deliveries(self.bike_orders, self.drone_orders, self.orders_declined_by_drones_battery + self.orders_declined_by_drones_range)
+        number_of_deliveries(self.bike_orders, self.drone_orders, self.orders_declined_by_drones_battery + self.orders_declined_by_drones_range)
         transit_time_distance(self.bike_time, self.drone_time)
         # average_time_delivery(self.avg_bike, 'bike')
         # average_time_delivery(self.avg_drone, 'drone')
-        #graph_plotting(self.bike_orders, bike_cost(self.data_bike,self.sim_time), self.drone_orders, drone_cost(self.data_drone))
+        # graph_plotting(self.bike_orders, bike_cost(self.data_bike,self.sim_time), self.drone_orders, drone_cost(self.data_drone))
         # plot(self.avg_order_time_data)

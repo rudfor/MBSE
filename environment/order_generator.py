@@ -31,5 +31,5 @@ class OrderGenerator:
         order_type = random.choice([OrderType.Coffee, OrderType.WarmMeal, OrderType.ColdMeal])
         return Order(p, time_ordered, None, distance, order_end, order_type)
 
-    def generate_time_until_order(self):
-        return max(0, numpy.random.normal(loc=5, scale=2.0, size=None))
+    def generate_time_until_order(self, order_factor):
+        return max(0, numpy.random.normal(loc=5 * order_factor, scale=2.0, size=None))

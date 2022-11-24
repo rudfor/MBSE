@@ -16,7 +16,7 @@ import random
 MINUTES_IN_DAY = 24 * 60
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 60 * 7 + 5
+TIME_LIMIT_MINUTES = 24 * 60 * 7
 
 # Environment
 MAP = Map()
@@ -89,6 +89,19 @@ def get_rain_interval():
         return min(rain_t1, rain_t2), max(rain_t1, rain_t2)
     return None
 
+def get_order_factor(current_time_minutes):
+    day, hour, _ = get_clock(current_time_minutes)
+
+    order_factor = 1
+
+    if day in ("friday", "saturday", "sunday"):
+        order_factor -= .2
+    if 12 <= hour < 14 or 18 <= hour < 20:
+        order_factor -= .2
+
+    return order_factor
+
+
 
 # Assume simulator starts monday 00:00
 def run_simulator():
@@ -116,12 +129,21 @@ def run_simulator():
 
         traffic_factor = get_traffic_factor(current_time_minutes)
         weather_factor, day, rain_interval = get_weather_factor(current_time_minutes, day, rain_interval)
+        order_factor = get_order_factor(current_time_minutes)
 
         traffic_status = "Ordinary" if traffic_factor == 1 else "Busy"
         print(f"TRAFFIC: {traffic_status} ({traffic_factor})")
 
         weather_status = "Regular" if weather_factor == 1 else "Rainy"
         print(f"WEATHER: {weather_status} ({weather_factor}) [{rain_interval}]")
+
+        if .8 <= order_factor < 1:
+            order_status = "Busy"
+        elif .6 <= order_factor < .8:
+            order_status = "Rush hour"
+        else:
+            order_status = "Regular"
+        print(f"ORDERS: {order_status} ({order_factor})")
 
         # Adjust courier speed for traffic and weather
         for courier in SYSTEM.couriers:
@@ -144,7 +166,7 @@ def run_simulator():
                 orders.append(order)
                 print(f"EVENT: Incoming order {order}")
 
-                next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(), None)
+                next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(order_factor), None)
 
                 STATS.total_orders_made += 1
 
