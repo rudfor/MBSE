@@ -113,7 +113,7 @@ class Bike(Courier):
             state_str = "returning to kitchen"
 
         status_str = f"{self.courier_type()} {self.id} {state_str} with {self.distance_to_destination:.2f} m " \
-                     f"/ {self.time_to_destination():.2f} min left"
+                     f"/ {self.time_to_destination():.2f} min left. speed: {self.speed}"
         return status_str
 
 

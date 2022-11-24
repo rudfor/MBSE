@@ -13,8 +13,10 @@ from utility.point import Point
 from utility.argparser import args
 import random
 
+MINUTES_IN_DAY = 24 * 60
+
 # Simulation configuration
-TIME_LIMIT_MINUTES = 24 * 60
+TIME_LIMIT_MINUTES = 60 * 7 + 5
 
 # Environment
 MAP = Map()
@@ -29,27 +31,67 @@ orders = []
 # Statistics tracking
 STATS = Stats()
 
+
 def day_no(current_time_minutes):
-    return int(current_time_minutes) // (24 * 60)
+    return int(current_time_minutes) // MINUTES_IN_DAY
 
 
 def get_traffic_factor(current_time_minutes):
+    daystr, hour, minutes = get_clock(current_time_minutes)
+    # No extra traffic in weekend
+    if daystr == "saturday" or daystr == "sunday":
+        return 1
+    # morning traffic 07:00 - 09:00
+    if 7 <= hour <= 9:
+        return random.uniform(0.8, 0.9)
+    # afternoon traffic 15:00 - 17:00
+    if 15 <= hour <= 17:
+        return random.uniform(0.8, 0.9)
+
     return 1
+
+
+def get_clock(current_time_minutes):
+    # 0 .. < 24*60
+    offset = current_time_minutes % MINUTES_IN_DAY
+    # 0 .. <= 23
+    hour = int(offset / 60)
+    # 0 .. < 60
+    minutes = int(offset % 60)
+
+    day_offset = int((current_time_minutes % (MINUTES_IN_DAY * 7)) / MINUTES_IN_DAY)
+    day = ""
+    if day_offset == 0:
+        day = "monday"
+    elif day_offset == 1:
+        day = "tuesday"
+    elif day_offset == 2:
+        day = "wednesday"
+    elif day_offset == 3:
+        day = "thursday"
+    elif day_offset == 4:
+        day = "friday"
+    elif day_offset == 5:
+        day = "saturday"
+    elif day_offset == 6:
+        day = "sunday"
+
+    return day, hour, minutes
 
 
 def get_rain_interval():
     # It rains ~183 days / year in Leiden
     rain_stat = 183 / 365
-    rain_t1 = random.uniform(0, 24 * 60)
-    rain_t2 = random.uniform(0, 24 * 60)
+    rain_t1 = random.uniform(0, MINUTES_IN_DAY)
+    rain_t2 = random.uniform(0, MINUTES_IN_DAY)
     if random.random() < rain_stat:
         return min(rain_t1, rain_t2), max(rain_t1, rain_t2)
     return None
 
 
+# Assume simulator starts monday 00:00
 def run_simulator():
     current_time_minutes = 0
-    weather_factor = 1
     rain_interval = None
     day = -1
 
@@ -61,31 +103,28 @@ def run_simulator():
 
     # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
-
-        traffic_factor = get_traffic_factor(current_time_minutes)
-        
-        if day_no(current_time_minutes) > day:
-            day += 1
-            rain_interval = get_rain_interval()
-            print(rain_interval)
-        
-        if rain_interval and rain_interval[0] <= current_time_minutes % (24 * 60) and current_time_minutes % (24 * 60) <= rain_interval[1]:
-            weather_factor = 0.8
-        else:
-            weather_factor = 1
-
-        for courier in SYSTEM.couriers:
-            courier.set_speed(weather_factor, traffic_factor)
-
         # Get next event
         next_event = get_next_event(SYSTEM, next_order)
 
-        if weather_factor != 1:
-            print("RAINY")
-
         # Increment and print current time
         current_time_minutes += next_event.event_time
-        print(f"Time: {current_time_minutes:.2f} min")
+
+        # Print time info
+        daystr, hour, minutes = get_clock(current_time_minutes)
+        print(f"Time: {current_time_minutes:.2f} min. Clock: {daystr}, {hour}: {minutes}")
+
+        traffic_factor = get_traffic_factor(current_time_minutes)
+        weather_factor, day, rain_interval = get_weather_factor(current_time_minutes, day, rain_interval)
+
+        traffic_status = "Ordinary" if traffic_factor == 1 else "Busy"
+        print(f"TRAFFIC: {traffic_status} ({traffic_factor})")
+
+        weather_status = "Regular" if weather_factor == 1 else "Rainy"
+        print(f"WEATHER: {weather_status} ({weather_factor}) [{rain_interval}]")
+
+        # Adjust courier speed for traffic and weather
+        for courier in SYSTEM.couriers:
+            courier.set_speed(weather_factor, traffic_factor)
 
         # Charge drones
         for drone in SYSTEM.drones():
@@ -95,7 +134,6 @@ def run_simulator():
         # Move all couriers
         for courier in SYSTEM.couriers:
             courier.move(next_event.event_time, traffic_factor, weather_factor)
-            
 
         # Perform operations depending on event type
         match next_event.event_type:
@@ -135,6 +173,18 @@ def run_simulator():
     print()
 
     STATS.plot_results()
+
+
+def get_weather_factor(current_time_minutes, day, rain_interval):
+    if day_no(current_time_minutes) > day:
+        day += 1
+        rain_interval = get_rain_interval()
+        # print(rain_interval)
+    if rain_interval and rain_interval[0] <= current_time_minutes % MINUTES_IN_DAY <= rain_interval[1]:
+        weather_factor = random.uniform(0.8, 0.9)
+    else:
+        weather_factor = 1
+    return weather_factor, day, rain_interval
 
 
 def get_next_event(system, next_order):
@@ -194,11 +244,11 @@ def accept_orders(current_time):
                 within_range = True
                 if drone.take_order(most_urgent_order):
                     order_flag = True
-                    #drones_copy.remove(drone)
+                    # drones_copy.remove(drone)
                     orders_taken.append(most_urgent_order)
                     orders.remove(most_urgent_order)
                     print(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
-                        f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
+                          f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
                     break
 
         if not within_range and most_urgent_order.id not in STATS.orders_declined_by_drones_range:
@@ -268,6 +318,7 @@ def print_results():
         print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
     except IndexError:
         pass
+
 
 def print_simulation_configuration():
     print("Simulation configuration:")
