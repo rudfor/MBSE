@@ -29,9 +29,12 @@ class Stats:
         self.drone_time = []
         self.charged_total = 0
 
-        self.orders_declined_by_drones = []
+        self.orders_declined_by_drones_battery = []
+        self.dronetype_orders_declined_by_drone = []
         self.orders_declined_by_drones_range = []
         self.total_orders_made = 0
+
+        self.sim_time = None
 
     def update_bike_stats(self, current_time_minutes, event_bike):
         bike_delivery_time = event_bike.time_to_destination()
@@ -57,16 +60,17 @@ class Stats:
         charged_total = abs(
             (current_time_minutes - drone_delivery_time) - (current_time_minutes + drone_delivery_time))
         avg_drone_time = self.drone_total_delivery_time / self.drone_orders_delivered
-        self.avg_drone.append((current_time_minutes, avg_drone_time))
+        self.avg_drone.append((current_time_minutes, avg_drone_time, event_drone.id))
         self.data_drone.append(
-            (current_time_minutes, self.drone_total_delivery_time, self.drone_orders_delivered, charged_total))
-        self.drone_orders.append(self.drone_orders_delivered)
+            (current_time_minutes, self.drone_total_delivery_time, self.drone_orders_delivered, charged_total, event_drone.id))
+        self.drone_orders.append((event_drone, self.drone_orders_delivered))
         self.drone_time.append((event_drone.id, drone_delivery_time))
 
     def plot_results(self):
-        number_of_deliveries(self.bike_orders, self.drone_orders)
-        transit_time_distance(self.bike_time, self.drone_time)
-        average_time_delivery(self.avg_bike, 'bike')
-        average_time_delivery(self.avg_drone, 'drone')
-        graph_plotting(self.bike_orders, bike_cost(self.data_bike), self.drone_orders, drone_cost(self.data_drone))
-        plot(self.avg_order_time_data)
+        pass
+        number_of_deliveries(self.bike_orders, self.drone_orders, self.orders_declined_by_drones_battery + self.orders_declined_by_drones_range)
+        # transit_time_distance(self.bike_time, self.drone_time)
+        # average_time_delivery(self.avg_bike, 'bike')
+        # average_time_delivery(self.avg_drone, 'drone')
+        #graph_plotting(self.bike_orders, bike_cost(self.data_bike,self.sim_time), self.drone_orders, drone_cost(self.data_drone))
+        # plot(self.avg_order_time_data)
