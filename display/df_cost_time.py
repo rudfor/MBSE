@@ -159,50 +159,55 @@ def number_of_deliveries(bike, drone, declined):  # input: list of all orders fo
 # maybe just a bar chart, showing which type took the closed, medium and longest away
 def transit_time_distance(bike,
                           drone):  # Input: bike_time, drone_time, -> simulator give the time it takes for each to reach distination
-    bike1 = Bike(1)
-    drone1 = DroneType1(1)
-    drone2 = DroneType2(1)
-    drone3 = DroneType3(1)
+    num_bike_orders_delivered = len(bike)
+    num_bike_orders_delivered_late = len([t for t in bike if t[2] < 0])
+    num_drone_orders_delivered = len(bike)
+    num_drone_orders_delivered_late = len([t for t in drone if t[2] < 0])
 
-    bike_transit_time = [i for i in bike]
-    bike_transit_distance = [i * bike1.avg_speed for i in bike]
-    range_bike = [
-        i * 0 + 1000 if i <= 1000 else i * 0 + 2000 if i > 1000 and i <= 2000 else i * 0 + 3000 if i > 2000 and i <= 3000 else i * 0 + 4000 if i > 3000 and i <= 4000 else i * 0 + 5000
-        for i in bike_transit_distance]
+    # bike1 = Bike(1)
+    # drone1 = DroneType1(1)
+    # drone2 = DroneType2(1)
+    # drone3 = DroneType3(1)
+    #
+    # bike_transit_time = [i for i in bike]
+    # bike_transit_distance = [i * bike1.avg_speed for i in bike]
+    # range_bike = [
+    #     i * 0 + 1000 if i <= 1000 else i * 0 + 2000 if i > 1000 and i <= 2000 else i * 0 + 3000 if i > 2000 and i <= 3000 else i * 0 + 4000 if i > 3000 and i <= 4000 else i * 0 + 5000
+    #     for i in bike_transit_distance]
+    #
+    # drone_transit_time = [i[1] for i in drone]
+    # drone_transit_distance = [
+    #     i[1] * drone1.avg_speed if i[0] == 4 else i[1] * drone2.avg_speed if i[0] == 5 else i[1] * drone3.avg_speed for
+    #     i in drone]
+    # drone_range = [
+    #     i * 0 + 1000 if i <= 1000 else i * 0 + 2000 if i > 1000 and i <= 2000 else i * 0 + 3000 if i > 2000 and i <= 3000 else i * 0 + 4000 if i > 3000 and i <= 4000 else i * 0 + 5000
+    #     for i in drone_transit_distance]
+    # bike_type = ['Bike' for i in range(0, len(bike_transit_distance))]
+    # drone_type = ['Drone 1' if i[0] == 4 else 'Drone 2' if i[0] == 5 else 'Drone 3' for i in drone]
+    #
+    # # On time delivery
+    # treshold = 10
+    # bike_on_time = [True if i < treshold else False for i in bike]
+    # on_time_bike = bike_on_time.count(True)
+    # drone_on_time = [True if i[1] < treshold else False for i in drone]
+    # on_time_drone = drone_on_time.count(True)
+    # bike_orders = len(bike_on_time)
+    # drone_orders = len(drone_on_time)
 
-    drone_transit_time = [i[1] for i in drone]
-    drone_transit_distance = [
-        i[1] * drone1.avg_speed if i[0] == 4 else i[1] * drone2.avg_speed if i[0] == 5 else i[1] * drone3.avg_speed for
-        i in drone]
-    drone_range = [
-        i * 0 + 1000 if i <= 1000 else i * 0 + 2000 if i > 1000 and i <= 2000 else i * 0 + 3000 if i > 2000 and i <= 3000 else i * 0 + 4000 if i > 3000 and i <= 4000 else i * 0 + 5000
-        for i in drone_transit_distance]
-    bike_type = ['Bike' for i in range(0, len(bike_transit_distance))]
-    drone_type = ['Drone 1' if i[0] == 4 else 'Drone 2' if i[0] == 5 else 'Drone 3' for i in drone]
-
-    # On time delivery
-    treshold = 10
-    bike_on_time = [True if i < treshold else False for i in bike]
-    on_time_bike = bike_on_time.count(True)
-    drone_on_time = [True if i[1] < treshold else False for i in drone]
-    on_time_drone = drone_on_time.count(True)
-    bike_orders = len(bike_on_time)
-    drone_orders = len(drone_on_time)
-
-    bike_on_time_percent = round((on_time_bike / bike_orders) * 100) if bike_orders > 0 else 0
-    bike_not_ontime_percent = round(((bike_orders - on_time_bike) / bike_orders) * 100) if bike_orders > 0 else 0
-    drone_on_time_percent = round((on_time_drone / drone_orders) * 100) if drone_orders > 0 else 0
-    drone_not_ontime_percent = round(((drone_orders - on_time_drone) / drone_orders) * 100) if drone_orders > 0 else 0
-
-    data_bike = list(zip(bike_transit_time, bike_transit_distance, range_bike, bike_type, bike_on_time))
-    df_bike = pd.DataFrame(data_bike, columns=['Transit time', 'Distance', 'Range', 'Type', 'On time'])
-
-    data_drone = list(zip(drone_transit_time, drone_transit_distance, drone_range, drone_type, drone_on_time))
-    df_drone = pd.DataFrame(data_drone, columns=['Transit time', 'Distance', 'Range', 'Type', 'On time'])
-
-    frames = [df_bike, df_drone]
-    result = pd.concat(frames)
-    print(result)
+    bike_on_time_percent = round(((num_bike_orders_delivered - num_bike_orders_delivered_late) / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
+    bike_not_ontime_percent = round((num_bike_orders_delivered_late / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
+    drone_on_time_percent = round(((num_drone_orders_delivered - num_drone_orders_delivered_late) / num_drone_orders_delivered) * 100) if num_drone_orders_delivered > 0 else 0
+    drone_not_ontime_percent = round((num_drone_orders_delivered_late / num_drone_orders_delivered) * 100) if num_drone_orders_delivered > 0 else 0
+    #
+    # data_bike = list(zip(bike_transit_time, bike_transit_distance, range_bike, bike_type, bike_on_time))
+    # df_bike = pd.DataFrame(data_bike, columns=['Transit time', 'Distance', 'Range', 'Type', 'On time'])
+    #
+    # data_drone = list(zip(drone_transit_time, drone_transit_distance, drone_range, drone_type, drone_on_time))
+    # df_drone = pd.DataFrame(data_drone, columns=['Transit time', 'Distance', 'Range', 'Type', 'On time'])
+    #
+    # frames = [df_bike, df_drone]
+    # result = pd.concat(frames)
+    # print(result)
 
     # print(f'Ontime: {bike_on_time_percent}::{drone_on_time_percent}\nNot ontime: {bike_not_ontime_percent}::{drone_not_ontime_percent}')
     success_rate = [bike_on_time_percent, bike_not_ontime_percent]
@@ -235,7 +240,7 @@ def transit_time_distance(bike,
     autolabel(rects2)
 
     fig.tight_layout()
-    plt.savefig("On time delivery.jpg")
+    #plt.savefig("On time delivery.jpg")
     plt.show()
 
     # Who takes the short, medium and long route
@@ -282,8 +287,8 @@ def transit_time_distance(bike,
     autolabel(rects2)
 
     fig.tight_layout()
-    plt.savefig("Range_distance.jpg")
-    plt.show()
+    #plt.savefig("Range_distance.jpg")
+    #plt.show()
 
 
 def average_time_delivery(data, plot):

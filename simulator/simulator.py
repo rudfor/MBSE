@@ -159,9 +159,9 @@ def run_simulator():
                 if event_courier.state == CourierState.ReturningToKitchen:
                     STATS.update_avg_order_time(current_time_minutes, event_courier)
                     if next_event.event_type == EventType.Bike:
-                        STATS.update_bike_stats(current_time_minutes, event_courier)
+                        STATS.update_bike_stats(current_time_minutes, event_courier, event_courier.order.time_to_threshold(current_time_minutes))
                     elif next_event.event_type == EventType.Drone:
-                        STATS.update_drone_stats(current_time_minutes, event_courier)
+                        STATS.update_drone_stats(current_time_minutes, event_courier, event_courier.order.time_to_threshold(current_time_minutes))
 
         accept_orders(current_time_minutes)
 
