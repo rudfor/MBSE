@@ -1,5 +1,5 @@
 from display.df_cost_time import number_of_deliveries, transit_time_distance, average_time_delivery, graph_plotting, \
-    bike_cost, drone_cost
+    bike_cost, drone_cost, get_sim_time
 from display.plot_avg_time import plot
 
 
@@ -30,7 +30,9 @@ class Stats:
         self.charged_total = 0
 
         self.orders_declined_by_drones = []
+        self.dronetype_orders_declined_by_drone = []
         self.total_orders_made = 0
+        self.sim_time = 0
 
     def update_bike_stats(self, current_time_minutes, event_bike):
         bike_delivery_time = event_bike.time_to_destination()
@@ -51,15 +53,15 @@ class Stats:
 
     def update_drone_stats(self, current_time_minutes, event_drone):
         drone_delivery_time = event_drone.time_to_destination()
-        self.drone_orders_delivered += 1  # if the graph should be showing cost/order --> need to be changed, if they can carry more than one order
+        self.drone_orders_delivered += 1  # if the graph should be showing cost/order --> need to be changed, if they can carry more than one orde
         self.drone_total_delivery_time += drone_delivery_time
         charged_total = abs(
             (current_time_minutes - drone_delivery_time) - (current_time_minutes + drone_delivery_time))
         avg_drone_time = self.drone_total_delivery_time / self.drone_orders_delivered
-        self.avg_drone.append((current_time_minutes, avg_drone_time))
+        self.avg_drone.append((current_time_minutes, avg_drone_time, event_drone.id))
         self.data_drone.append(
-            (current_time_minutes, self.drone_total_delivery_time, self.drone_orders_delivered, charged_total))
-        self.drone_orders.append(self.drone_orders_delivered)
+            (current_time_minutes, self.drone_total_delivery_time, self.drone_orders_delivered, charged_total, event_drone.id))
+        self.drone_orders.append((event_drone.id, self.drone_orders_delivered, self.orders_declined_by_drones))
         self.drone_time.append((event_drone.id, drone_delivery_time))
 
     def plot_results(self):
@@ -67,5 +69,5 @@ class Stats:
         transit_time_distance(self.bike_time, self.drone_time)
         average_time_delivery(self.avg_bike, 'bike')
         average_time_delivery(self.avg_drone, 'drone')
-        graph_plotting(self.bike_orders, bike_cost(self.data_bike), self.drone_orders, drone_cost(self.data_drone))
+        graph_plotting(self.bike_orders, bike_cost(self.data_bike,get_sim_time(self.sim_time)), self.drone_orders, drone_cost(self.data_drone))
         plot(self.avg_order_time_data)

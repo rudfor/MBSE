@@ -24,3 +24,4 @@ pytz==2022.5
 routingpy==1.1.0
 rtree==1.0.1
 shapely==1.8.5.post1
+seaborn==0.12.1
