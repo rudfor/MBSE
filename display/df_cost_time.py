@@ -163,35 +163,15 @@ def transit_time_distance(bike,
     num_drone_orders_delivered = len(bike)
     num_drone_orders_delivered_late = len([t for t in drone if t[2] < 0])
 
-    # bike1 = Bike(1)
-    # drone1 = DroneType1(1)
-    # drone2 = DroneType2(1)
-    # drone3 = DroneType3(1)
-    #
-    # bike_transit_time = [i for i in bike]
-    # bike_transit_distance = [i * bike1.avg_speed for i in bike]
-    # range_bike = [
-    #     i * 0 + 1000 if i <= 1000 else i * 0 + 2000 if i > 1000 and i <= 2000 else i * 0 + 3000 if i > 2000 and i <= 3000 else i * 0 + 4000 if i > 3000 and i <= 4000 else i * 0 + 5000
-    #     for i in bike_transit_distance]
-    #
-    # drone_transit_time = [i[1] for i in drone]
-    # drone_transit_distance = [
-    #     i[1] * drone1.avg_speed if i[0] == 4 else i[1] * drone2.avg_speed if i[0] == 5 else i[1] * drone3.avg_speed for
-    #     i in drone]
-    # drone_range = [
-    #     i * 0 + 1000 if i <= 1000 else i * 0 + 2000 if i > 1000 and i <= 2000 else i * 0 + 3000 if i > 2000 and i <= 3000 else i * 0 + 4000 if i > 3000 and i <= 4000 else i * 0 + 5000
-    #     for i in drone_transit_distance]
-    # bike_type = ['Bike' for i in range(0, len(bike_transit_distance))]
-    # drone_type = ['Drone 1' if i[0] == 4 else 'Drone 2' if i[0] == 5 else 'Drone 3' for i in drone]
-    #
-    # # On time delivery
-    # treshold = 10
-    # bike_on_time = [True if i < treshold else False for i in bike]
-    # on_time_bike = bike_on_time.count(True)
-    # drone_on_time = [True if i[1] < treshold else False for i in drone]
-    # on_time_drone = drone_on_time.count(True)
-    # bike_orders = len(bike_on_time)
-    # drone_orders = len(drone_on_time)
+    num_bike_orders_0_15 = len([t[1] for t in bike if 0.0 <= t[1] < 15.0])
+    num_bike_orders_15_30 = len([t[1] for t in bike if 15.0 <= t[1] < 30.0])
+    num_bike_orders_30_45 = len([t[1] for t in bike if 30.0 <= t[1] < 45.0])
+    num_bike_orders_45_60 = len([t[1] for t in bike if 45.0 <= t[1] < 60.0])
+
+    num_drone_orders_0_15 = len([t[1] for t in drone if 0.0 <= t[1] < 15.0])
+    num_drone_orders_15_30 = len([t[1] for t in drone if 15.0 <= t[1] < 30.0])
+    num_drone_orders_30_45 = len([t[1] for t in drone if 30.0 <= t[1] < 45.0])
+    num_drone_orders_45_60 = len([t[1] for t in drone if 45.0 <= t[1] < 60.0])
 
     bike_on_time_percent = round(((num_bike_orders_delivered - num_bike_orders_delivered_late) / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
     bike_not_ontime_percent = round((num_bike_orders_delivered_late / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
@@ -209,18 +189,20 @@ def transit_time_distance(bike,
     # print(result)
 
     # print(f'Ontime: {bike_on_time_percent}::{drone_on_time_percent}\nNot ontime: {bike_not_ontime_percent}::{drone_not_ontime_percent}')
-    success_rate = [bike_on_time_percent, bike_not_ontime_percent]
-    not_success_rate = [drone_on_time_percent, drone_not_ontime_percent]
+    success_rate = [0, 0, 0, 0, bike_on_time_percent, bike_not_ontime_percent]
+    not_success_rate = [0, 0, 0, 0, drone_on_time_percent, drone_not_ontime_percent]
 
-    label = ['On-time', 'Not on-time']
+    label = ['0-15 min', '15-30 min', '30-45 min', '45-60 min', '>60 min (Late)', 'On-time']
     x = np.arange(len(label))  # the label locations
     width = 0.35  # the width of the bars
     fig, ax = plt.subplots()
+
     rects1 = ax.bar(x - width / 2, success_rate, width, label='Bikes')
     rects2 = ax.bar(x + width / 2, not_success_rate, width, label='Drones')
+
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel('Type')
-    ax.set_title('On time delivery', fontsize=14, fontweight='bold')
+    ax.set_title('Delivery performance in percent', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
     ax.set_xticklabels(label, rotation=45)
     ax.legend()

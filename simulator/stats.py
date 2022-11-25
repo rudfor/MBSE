@@ -44,7 +44,10 @@ class Stats:
         self.avg_bike.append((current_time_minutes, avg_bike_time))
         self.data_bike.append((current_time_minutes, self.bike_total_delivery_time, self.bike_orders_delivered))
         self.bike_orders.append(self.bike_orders_delivered)
-        self.bike_time.append((event_bike, bike_delivery_time, time_to_threshold))
+
+
+        order_delivery_time = current_time_minutes - event_bike.last_order_delivered.time_ordered
+        self.bike_time.append((event_bike, order_delivery_time, time_to_threshold, current_time_minutes))
 
     def update_avg_order_time(self, current_time_minutes, event_courier):
         self.total_orders_delivered += 1
@@ -64,7 +67,9 @@ class Stats:
         self.data_drone.append(
             (current_time_minutes, self.drone_total_delivery_time, self.drone_orders_delivered, charged_total, event_drone.id))
         self.drone_orders.append((event_drone, self.drone_orders_delivered))
-        self.drone_time.append((event_drone, drone_delivery_time, time_to_threshold))
+
+        order_delivery_time = current_time_minutes - event_drone.order.time_ordered
+        self.drone_time.append((event_drone, order_delivery_time, time_to_threshold))
 
     def plot_results(self):
         pass

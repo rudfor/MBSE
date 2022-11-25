@@ -22,6 +22,7 @@ class Bike(Courier):
         self.num_orders_taken = 0
         self.has_breakdown = False
         self.speed = self.avg_speed
+        self.last_order_delivered = None
 
     def set_speed(self, weather_factor, traffic_factor):
         self.speed = self.avg_speed * weather_factor * traffic_factor
@@ -33,8 +34,9 @@ class Bike(Courier):
 
             if self.has_arrived():
                 # If there are more orders to deliver
+                self.last_order_delivered = self.order
                 if self.state == CourierState.DeliveringOrder and self.orders:
-                    # Prepare next order in route
+                    # Prepare next order in route  
                     self.order = self.orders.pop(0)
                     self.distance_to_destination = self.order_distances.pop(0)
                     self.orders_delivered += 1

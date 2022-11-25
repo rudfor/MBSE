@@ -178,7 +178,7 @@ def run_simulator():
                 print(f"EVENT: {event_courier.courier_type()} {event_courier.id} {courier_event_str}")
 
                 # Order delivered, update stats
-                if event_courier.state == CourierState.ReturningToKitchen:
+                if not event_courier.is_standby():
                     STATS.update_avg_order_time(current_time_minutes, event_courier)
                     if next_event.event_type == EventType.Bike:
                         STATS.update_bike_stats(current_time_minutes, event_courier, event_courier.order.time_to_threshold(current_time_minutes))
