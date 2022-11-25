@@ -16,7 +16,7 @@ import random
 MINUTES_IN_DAY = 24 * 60
 
 # Simulation configuration
-TIME_LIMIT_MINUTES = 24 * 60 * 7
+TIME_LIMIT_MINUTES = args.TIME
 
 # Environment
 MAP = Map()

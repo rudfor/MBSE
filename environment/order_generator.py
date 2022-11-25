@@ -12,7 +12,7 @@ class OrderGenerator:
     def __init__(self, osmnx_map):
         self.map = osmnx_map
         if not args.RNDM:
-            numpy.random.seed(2223)
+            numpy.random.seed(args.SEED)
 
     # Return a list of orders when time dt has elapsed
     # def advance(self, dt):

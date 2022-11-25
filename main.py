@@ -4,7 +4,8 @@ from utility.argparser import args
 import random
 
 if __name__ == '__main__':
+
     if not args.RNDM:
-        random.seed(2223)
+        random.seed(args.SEED)
     
     run_simulator()

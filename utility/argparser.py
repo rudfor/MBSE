@@ -25,6 +25,8 @@ parser.add_argument("--drone-charge-time", type=int, default=60, dest="DRONE_CHA
 parser.add_argument("--drone-avg-speed", type=int, default=15 / 2 * 60, dest="DRONE_AVG_SPEED", help="default: 7.5 m/s")
 parser.add_argument("--drone-weight-limit", type=int, default=8, dest="DRONE_WEIGHT_LIMIT", help="default: 8 kg")
 parser.add_argument("-r", "--random", action="store_true", default=False, dest="RNDM", help="Choose a random seed (default: False)")
+parser.add_argument("-t", "--time", type=int, default=300, dest="TIME", help="Timeframe in minutes (default: 300)")
+parser.add_argument("-s", "--seed", type=int, default=2223, dest="SEED", help="Choose a custom seed (default: 2223)")
 parser.add_argument("--breakdown-rate", type=float, default=0.01, dest="BREAKDOWN_RATE", help="Rate of bike breakdown per order delivery")
 
 args = parser.parse_args()
