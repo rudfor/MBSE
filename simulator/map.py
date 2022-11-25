@@ -79,7 +79,7 @@ class Map:
                 # args for now: we'll do that later
                 override = {"show", "save", "close"}
                 kwargs = {}  # {k: v for k, v in pg_kwargs.items() if k not in override}
-                fig, ax = ox.plot.plot_graph(self.G, show=False, save=False, close=False, route_alpha=0.75, **kwargs)
+                fig, ax = ox.plot.plot_graph(self.G, show=False, save=False, close=False, **kwargs)
             else:
                 fig = ax.figure
 

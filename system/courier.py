@@ -20,7 +20,7 @@ class Courier:
         self.id = Courier.id_counter
         Courier.id_counter += 1
 
-    def move(self, delta_time_minutes):
+    def move(self, delta_time_minutes, traffic_factor, weather_factor):
         if not self.is_standby():
             self.distance_to_destination -= delta_time_minutes * self.avg_speed
 
