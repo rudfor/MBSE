@@ -24,7 +24,6 @@ from utility.argparser import args
 def get_sim_time(data):
     return data
 
-
 # Number of deleveries for both bikes and drones - also how many they missed
 # Plottet against each other to show who took the most orders
 def number_of_deliveries(bike, drone, declined):  # input: list of all orders for both bikes and drones also missed deliveries
@@ -134,18 +133,8 @@ def number_of_deliveries(bike, drone, declined):  # input: list of all orders fo
     ax.set_xticklabels(label, rotation=45)
     ax.legend()
 
-    def autolabel(rects):
-        """Attach a text label above each bar in *rects*, displaying its height."""
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 3),  # 3 points vertical offset
-                        textcoords="offset points",
-                        ha='center', va='bottom')
-
-    autolabel(rects1)
-    autolabel(rects2)
+    autolabel(rects1, ax)
+    autolabel(rects2, ax)
 
     fig.tight_layout()
     #plt.savefig("Number of deliveries.jpg")
@@ -156,120 +145,99 @@ def number_of_deliveries(bike, drone, declined):  # input: list of all orders fo
 # Splitting the orders into distance and compare them that way - then it can be visualised what's the best option
 # for close and long distance instead.
 # maybe just a bar chart, showing which type took the closed, medium and longest away
-def transit_time_distance(bike,
-                          drone):  # Input: bike_time, drone_time, -> simulator give the time it takes for each to reach distination
-    num_bike_orders_delivered = len(bike)
-    num_bike_orders_delivered_late = len([t for t in bike if t[2] < 0])
-    num_drone_orders_delivered = len(bike)
-    num_drone_orders_delivered_late = len([t for t in drone if t[2] < 0])
-
+def delivery_time_intervals(bike, drone): 
+    
     num_bike_orders_0_15 = len([t[1] for t in bike if 0.0 <= t[1] < 15.0])
     num_bike_orders_15_30 = len([t[1] for t in bike if 15.0 <= t[1] < 30.0])
     num_bike_orders_30_45 = len([t[1] for t in bike if 30.0 <= t[1] < 45.0])
-    num_bike_orders_45_60 = len([t[1] for t in bike if 45.0 <= t[1] < 60.0])
+    num_bike_orders_45_60 = len([t[1] for t in bike if 45.0 <= t[1] <= 60.0])
+    num_bike_orders_over_60 = len([t[1] for t in bike if t[1] > 60.0])
 
     num_drone_orders_0_15 = len([t[1] for t in drone if 0.0 <= t[1] < 15.0])
     num_drone_orders_15_30 = len([t[1] for t in drone if 15.0 <= t[1] < 30.0])
     num_drone_orders_30_45 = len([t[1] for t in drone if 30.0 <= t[1] < 45.0])
     num_drone_orders_45_60 = len([t[1] for t in drone if 45.0 <= t[1] < 60.0])
+    num_drones_orders_over_60 = len([t[1] for t in drone if t[1] > 60.0])
 
-    bike_on_time_percent = round(((num_bike_orders_delivered - num_bike_orders_delivered_late) / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
-    bike_not_ontime_percent = round((num_bike_orders_delivered_late / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
-    drone_on_time_percent = round(((num_drone_orders_delivered - num_drone_orders_delivered_late) / num_drone_orders_delivered) * 100) if num_drone_orders_delivered > 0 else 0
-    drone_not_ontime_percent = round((num_drone_orders_delivered_late / num_drone_orders_delivered) * 100) if num_drone_orders_delivered > 0 else 0
-    #
-    # data_bike = list(zip(bike_transit_time, bike_transit_distance, range_bike, bike_type, bike_on_time))
-    # df_bike = pd.DataFrame(data_bike, columns=['Transit time', 'Distance', 'Range', 'Type', 'On time'])
-    #
-    # data_drone = list(zip(drone_transit_time, drone_transit_distance, drone_range, drone_type, drone_on_time))
-    # df_drone = pd.DataFrame(data_drone, columns=['Transit time', 'Distance', 'Range', 'Type', 'On time'])
-    #
-    # frames = [df_bike, df_drone]
-    # result = pd.concat(frames)
-    # print(result)
+    bike_orders = [num_bike_orders_0_15, num_bike_orders_15_30, num_bike_orders_30_45, num_bike_orders_45_60, num_bike_orders_over_60]
+    drone_orders = [num_drone_orders_0_15, num_drone_orders_15_30, num_drone_orders_30_45, num_drone_orders_45_60, num_drones_orders_over_60]
 
-    # print(f'Ontime: {bike_on_time_percent}::{drone_on_time_percent}\nNot ontime: {bike_not_ontime_percent}::{drone_not_ontime_percent}')
-    success_rate = [0, 0, 0, 0, bike_on_time_percent, bike_not_ontime_percent]
-    not_success_rate = [0, 0, 0, 0, drone_on_time_percent, drone_not_ontime_percent]
-
-    label = ['0-15 min', '15-30 min', '30-45 min', '45-60 min', '>60 min (Late)', 'On-time']
+    label = ['0-15 min', '15-30 min', '30-45 min', '45-60 min', '>60 min']
     x = np.arange(len(label))  # the label locations
     width = 0.35  # the width of the bars
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots() 
 
-    rects1 = ax.bar(x - width / 2, success_rate, width, label='Bikes')
-    rects2 = ax.bar(x + width / 2, not_success_rate, width, label='Drones')
+    rects1 = ax.bar(x - width / 2, bike_orders, width, label='Bikes')
+    rects2 = ax.bar(x + width / 2, drone_orders, width, label='Drones')
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel('Type')
-    ax.set_title('Delivery performance in percent', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Number of orders')
+    ax.set_title('Delivery time intervals', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
     ax.set_xticklabels(label, rotation=45)
     ax.legend()
-
-    def autolabel(rects):
-        """Attach a text label above each bar in *rects*, displaying its height."""
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 3),  # 3 points vertical offset
-                        textcoords="offset points",
-                        ha='center', va='bottom')
-
-    autolabel(rects1)
-    autolabel(rects2)
+    ax.bar_label(rects1)
+    ax.bar_label(rects2)
 
     fig.tight_layout()
-    #plt.savefig("On time delivery.jpg")
     plt.show()
 
-    # Who takes the short, medium and long route
-    label = ['Range 1000m', 'Range 2000m', 'Range 3000m', 'Range 4000m', 'Range 5000m']
+    # # Who takes the short, medium and long route
+    # label = ['Range 1000m', 'Range 2000m', 'Range 3000m', 'Range 4000m', 'Range 5000m']
 
-    b1 = df_bike.value_counts(subset='Range')[1000] if 1000 in df_bike.values else 0
-    b2 = df_bike.value_counts(subset='Range')[2000] if 2000 in df_bike.values else 0
-    b3 = df_bike.value_counts(subset='Range')[3000] if 3000 in df_bike.values else 0
-    b4 = df_bike.value_counts(subset='Range')[4000] if 4000 in df_bike.values else 0
-    b5 = df_bike.value_counts(subset='Range')[5000] if 5000 in df_bike.values else 0
+    # b1 = df_bike.value_counts(subset='Range')[1000] if 1000 in df_bike.values else 0
+    # b2 = df_bike.value_counts(subset='Range')[2000] if 2000 in df_bike.values else 0
+    # b3 = df_bike.value_counts(subset='Range')[3000] if 3000 in df_bike.values else 0
+    # b4 = df_bike.value_counts(subset='Range')[4000] if 4000 in df_bike.values else 0
+    # b5 = df_bike.value_counts(subset='Range')[5000] if 5000 in df_bike.values else 0
 
-    d1 = df_drone.value_counts(subset='Range')[1000] if 1000 in df_drone.values else 0
-    d2 = df_drone.value_counts(subset='Range')[2000] if 2000 in df_drone.values else 0
-    d3 = df_drone.value_counts(subset='Range')[3000] if 3000 in df_drone.values else 0
-    d4 = df_drone.value_counts(subset='Range')[4000] if 4000 in df_drone.values else 0
-    d5 = df_drone.value_counts(subset='Range')[5000] if 5000 in df_drone.values else 0
+    # d1 = df_drone.value_counts(subset='Range')[1000] if 1000 in df_drone.values else 0
+    # d2 = df_drone.value_counts(subset='Range')[2000] if 2000 in df_drone.values else 0
+    # d3 = df_drone.value_counts(subset='Range')[3000] if 3000 in df_drone.values else 0
+    # d4 = df_drone.value_counts(subset='Range')[4000] if 4000 in df_drone.values else 0
+    # d5 = df_drone.value_counts(subset='Range')[5000] if 5000 in df_drone.values else 0
 
-    range_bike_count = [b1, b2, b3, b4, b5]
-    range_drone_count = [d1, d2, d3, d4, d5]
+    # range_bike_count = [b1, b2, b3, b4, b5]
+    # range_drone_count = [d1, d2, d3, d4, d5]
 
-    x = np.arange(len(label))  # the label locations
-    width = 0.35  # the width of the bars
+    # x = np.arange(len(label))  # the label locations
+    # width = 0.35  # the width of the bars
+    # fig, ax = plt.subplots()
+    # rects1 = ax.bar(x - width / 2, range_bike_count, width, label='Range for bikes')
+    # rects2 = ax.bar(x + width / 2, range_drone_count, width, label='Range for drones')
+    # # Add some text for labels, title and custom x-axis tick labels, etc.
+    # ax.set_ylabel('Type')
+    # ax.set_title('Distance', fontsize=14, fontweight='bold')
+    # ax.set_xticks(x)
+    # ax.set_xticklabels(label, rotation=45)
+    # ax.legend()
+
+    # autolabel(rects1, ax)
+    # autolabel(rects2, ax)
+
+    # fig.tight_layout()
+
+
+def delivery_threshold(bike, drone):
+
+    num_bike_orders_delivered = len(bike)
+    num_bike_orders_delivered_late = len([t for t in bike if t[2] < 0])
+    bike_on_time_percent = round(((num_bike_orders_delivered - num_bike_orders_delivered_late) / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
+    bike_not_ontime_percent = round((num_bike_orders_delivered_late / num_bike_orders_delivered) * 100) if num_bike_orders_delivered > 0 else 0
+
+    num_drone_orders_delivered = len(drone)
+    num_drone_orders_delivered_late = len([t for t in drone if t[2] < 0])
+    drone_on_time_percent = round(((num_drone_orders_delivered - num_drone_orders_delivered_late) / num_drone_orders_delivered) * 100) if num_drone_orders_delivered > 0 else 0
+    drone_not_ontime_percent = round((num_drone_orders_delivered_late / num_drone_orders_delivered) * 100) if num_drone_orders_delivered > 0 else 0
+
+    labels = "Bike on-time deliveries", "Bike late deliveries", "Drone on-time deliveries", "Drone late deliveries"
+    sizes = (bike_on_time_percent, bike_not_ontime_percent, drone_on_time_percent, drone_not_ontime_percent)
+    
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width / 2, range_bike_count, width, label='Range for bikes')
-    rects2 = ax.bar(x + width / 2, range_drone_count, width, label='Range for drones')
-    # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel('Type')
-    ax.set_title('Distance', fontsize=14, fontweight='bold')
-    ax.set_xticks(x)
-    ax.set_xticklabels(label, rotation=45)
-    ax.legend()
-
-    def autolabel(rects):
-        """Attach a text label above each bar in *rects*, displaying its height."""
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 3),  # 3 points vertical offset
-                        textcoords="offset points",
-                        ha='center', va='bottom')
-
-    autolabel(rects1)
-    autolabel(rects2)
-
-    fig.tight_layout()
-    #plt.savefig("Range_distance.jpg")
-    #plt.show()
+    ax.set_title("Delivery threshold performance")
+    ax.pie(sizes, labels=labels, autopct="%1.1f%%", shadow=True, startangle=90)
+    ax.axis("equal")
+    
+    plt.show()
 
 
 def average_time_delivery(data, plot):
