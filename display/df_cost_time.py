@@ -198,22 +198,16 @@ def delivery_threshold(bike, drone):
     plt.show()
 
 
-def average_time_delivery(data, plot):
-    time_slots = [i[0] for i in data]
-    avg_order_time = [i[1] for i in data]
-
-    if len(time_slots) == 0:
-        time_slots = [0]
-        avg_order_time = [0]
-
+def average_time_delivery(bike_data, drone_data, order_interarrival_time):
     # plot the graph
     plt.style.use('ggplot')
-    plt.title(f'Average time for delivering {plot} \n', fontsize=14, fontweight='bold')
-    plt.plot(time_slots, avg_order_time, 'b*-', label='Average order delivery time over time')
-    plt.xlabel('Hours', fontsize=10)
-    plt.ylabel('Average order delivery time(minutes) for ', fontsize=10)
+    #plt.title(f'Average time for delivering {plot} \n', fontsize=14, fontweight='bold')
+    plt.plot([time for time, _ in bike_data], [avg for _, avg in bike_data], 'r-', label='Avg. bike order time')
+    plt.plot([time for time, _ in drone_data], [avg for _, avg in drone_data], 'b-', label='Avg. drone order time')
+    plt.plot([time for time, _ in order_interarrival_time], [interarrival_time for _, interarrival_time in order_interarrival_time], 'g--', label='Order interarrival time')
+    plt.xlabel('Elapsed time (minutes)', fontsize=10)
+    plt.ylabel('Time (minutes)', fontsize=10)
     plt.legend()
-    plt.savefig(f"Average time for {plot}.jpg")
     plt.show()
 
 
