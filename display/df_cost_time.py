@@ -100,7 +100,7 @@ def number_of_deliveries(
 
     num_orders_total = len(bike_orders_delivered) + len(drone_orders_delivered)
 
-    print(f"Total order: {num_orders_total}")
+    #print(f"Total order: {num_orders_total}")
 
     data = [('Declined by drones due to battery', len(orders_declined_by_drones_battery)/num_orders_total*100),
             ('Declined by drones due to range', len(orders_declined_by_drones_range)/num_orders_total*100),
