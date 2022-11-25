@@ -185,7 +185,7 @@ def run_simulator():
 
                 # Order delivered, update stats
                 if not event_courier.is_standby():
-                    STATS.update_avg_order_time(current_time_minutes, event_courier)
+                    #STATS.update_avg_order_time(current_time_minutes, event_courier)
                     STATS.order_interarrival_time.append((current_time_minutes, args.BASE_ORDER_INTERARRIVAL_TIME * order_factor))
                     if next_event.event_type == EventType.Bike:
                         STATS.update_bike_stats(current_time_minutes, event_courier)
