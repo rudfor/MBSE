@@ -110,19 +110,13 @@ def run_simulator():
     day = -1
 
     # Let's always start with an order, for testing purposes
-    next_order = Event(EventType.Order, 0, None)
+    next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(get_order_factor(current_time_minutes)), None)
     STATS.total_orders_made += 1
 
     print_simulation_configuration()
 
     # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
-        # Get next event
-        next_event = get_next_event(SYSTEM, next_order)
-
-        # Increment and print current time
-        current_time_minutes += next_event.event_time
-
         # Print time info
         daystr, hour, minutes = get_clock(current_time_minutes)
         print(f"Time: {current_time_minutes:.2f} min. Clock: {daystr}, {hour}: {minutes}")
@@ -148,6 +142,20 @@ def run_simulator():
         # Adjust courier speed for traffic and weather
         for courier in SYSTEM.couriers:
             courier.set_speed(weather_factor, traffic_factor)
+
+        print_state()
+
+        if args.PLOT:
+            MAP.plot_courier_paths(SYSTEM.couriers)
+
+
+        # Get next event
+        next_event = get_next_event(SYSTEM, next_order)
+
+        # Increment and print current time
+        current_time_minutes += next_event.event_time
+
+
 
         # Charge drones
         for drone in SYSTEM.drones():
@@ -181,16 +189,13 @@ def run_simulator():
                 if not event_courier.is_standby():
                     STATS.update_avg_order_time(current_time_minutes, event_courier)
                     if next_event.event_type == EventType.Bike:
-                        STATS.update_bike_stats(current_time_minutes, event_courier, event_courier.order.time_to_threshold(current_time_minutes))
+                        STATS.update_bike_stats(current_time_minutes, event_courier)
                     elif next_event.event_type == EventType.Drone:
-                        STATS.update_drone_stats(current_time_minutes, event_courier, event_courier.order.time_to_threshold(current_time_minutes))
+                        STATS.update_drone_stats(current_time_minutes, event_courier)
 
         accept_orders(current_time_minutes)
 
-        print_state()
 
-        if args.PLOT:
-            MAP.plot_courier_paths(SYSTEM.couriers)
 
     print_results()
     print()

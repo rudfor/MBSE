@@ -1,4 +1,7 @@
+import math
 from random import random
+
+import numpy
 
 from system.courier import Courier, CourierState
 from utility.argparser import args
@@ -31,10 +34,10 @@ class Bike(Courier):
 
         if not self.is_standby():
             self.distance_to_destination -= delta_time_minutes * self.speed
-
             if self.has_arrived():
                 # If there are more orders to deliver
                 self.last_order_delivered = self.order
+                print(self.last_order_delivered)
                 if self.state == CourierState.DeliveringOrder and self.orders:
                     # Prepare next order in route  
                     self.order = self.orders.pop(0)
@@ -100,7 +103,7 @@ class Bike(Courier):
         self.state = CourierState.DeliveringOrder
 
     def has_arrived(self):
-        return self.distance_to_destination <= 0
+        return numpy.isclose(self.distance_to_destination, 0)
 
     def courier_type(self):
         return "Bike"
