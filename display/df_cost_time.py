@@ -60,21 +60,37 @@ def number_of_deliveries(bike_orders_delivered, drone_orders_delivered, orders_d
     print(f"bike_orders_delivered: {len(bike_orders_delivered)}")
     print(f'Total order: {num_orders_total}')
 
-    label = ['Orders delivered by bike', 'Orders delivered by DroneType1', 'Orders delivered by DroneType2',
-             'Orders delivered by DroneType3', 'Orders delivered by DefaultDrone', 'Total drone orders delivered',
-             'Orders declined by drones due to battery', 'Orders declined by drones due to range',
-             'Total orders delivered']
-    data_orders = [len(bike_orders_delivered), len(dronetype1_orders_delivered), len(dronetype2_orders_delivered),
-                   len(dronetype3_orders_delivered), len(defaultdrone_orders_delivered), len(drone_orders_delivered),
-                   len(orders_declined_by_drones_battery), len(orders_declined_by_drones_range), num_orders_total]
+    data = [('Declined by drones due to battery', len(orders_declined_by_drones_battery)/num_orders_total*100),
+            ('Declined by drones due to range', len(orders_declined_by_drones_range)/num_orders_total*100),
+            ('Delivered by DroneType1', len(dronetype1_orders_delivered)/num_orders_total*100),
+            ('Delivered by DroneType2', len(dronetype2_orders_delivered)/num_orders_total*100),
+            ('Delivered by DroneType3', len(dronetype3_orders_delivered)/num_orders_total*100),
+            ('Delivered by DefaultDrone', len(defaultdrone_orders_delivered)/num_orders_total*100),
+            ('Delivered by drones', len(drone_orders_delivered)/num_orders_total*100),
+            ('Delivered by bikes', len(bike_orders_delivered)/num_orders_total*100)]
+    labels = [label for label, _ in data]
+    orders_data = [n for _, n in data]
 
     fig, ax = plt.subplots()
-
-    bars = ax.barh(label, data_orders)
-    ax.bar_label(bars)
-    ax.margins(x=0.1)
-    ax.axvline(x=num_orders_total, color='b', label='axvline - full height')
+    plt.xlabel("Number of orders (%)")
+    plt.xlim([0, 100])
+    bars = ax.barh(labels, orders_data)
+    #ax.bar_label(bars)
+    ax.margins(x=0.3)
     fig.tight_layout()
+
+    rects = ax.patches
+    for rect in rects:
+        x_value = rect.get_width()
+        y_value = rect.get_y() + rect.get_height() / 2
+        space = 5
+        label = "{:.2f}%".format(x_value)
+        plt.annotate(
+            label,
+            (x_value, y_value),
+            xytext=(space, 0),  # Horizontally shift label by `space`
+            textcoords="offset points",
+            va='center')
 
     plt.show()
 
