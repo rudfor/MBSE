@@ -27,128 +27,44 @@ def get_sim_time(data):
 
 # Number of deleveries for both bikes and drones - also how many they missed
 # Plottet against each other to show who took the most orders
-def number_of_deliveries(bike, drone, declined):  # input: list of all orders for both bikes and drones also missed deliveries
-    bike_orders = [i for i in bike]
-    missed_bike_orders = []
-    drone_orders_1 = [i[1] for i in drone if isinstance(i[0], DroneType1)]
-    drone_orders_2 = [i[1] for i in drone if isinstance(i[0], DroneType2)]
-    drone_orders_3 = [i[1] for i in drone if isinstance(i[0], DroneType3)]
-    drone_orders_default = [i[1] for i in drone if isinstance(i[0], DefaultDrone)]
-    drone_orders_total = len(drone_orders_1) + len(drone_orders_2) + len(drone_orders_3) + len(drone_orders_default)
-    print(f"drone orders default {drone_orders_default}")
-    # declined = [i[2] for i in drone]
 
-    # drone_decline_orders_1 = [i[2] for i in drone if i[0]==4]
-    # drone_decline_orders_2 = [i[2] for i in drone if i[0]==5]
-    # drone_decline_orders_3 = [i[2] for i in drone if i[0]==6]
+  # input: list of all orders for both bikes and drones also missed deliveries
+def number_of_deliveries(bike_orders_delivered, drone_orders_delivered, orders_declined_by_drones_battery, orders_declined_by_drones_range):
+    dronetype1_orders_delivered = [order for drone, order in drone_orders_delivered if isinstance(drone, DroneType1)]
+    dronetype2_orders_delivered = [order for drone, order in drone_orders_delivered if isinstance(drone, DroneType2)]
+    dronetype3_orders_delivered = [order for drone, order in drone_orders_delivered if isinstance(drone, DroneType3)]
+    defaultdrone_orders_delivered = [order for drone, order in drone_orders_delivered if isinstance(drone, DefaultDrone)]
 
-    # print(f'Decline drones: {drone_decline_orders_1}::{drone_decline_orders_2}::{drone_decline_orders_3}')
+    dronetype1_orders_declined_battery = [order for drone, order in orders_declined_by_drones_battery if isinstance(drone, DroneType1)]
+    dronetype2_orders_declined_battery = [order for drone, order in orders_declined_by_drones_battery if isinstance(drone, DroneType2)]
+    dronetype3_orders_declined_battery = [order for drone, order in orders_declined_by_drones_battery if isinstance(drone, DroneType3)]
+    defaultdrone_orders_declined_battery = [order for drone, order in orders_declined_by_drones_battery if
+                                     isinstance(drone, DefaultDrone)]
 
-    # change if they can take more than one delivery - then it should be sum()
-    if len(bike_orders) > 0:
-        last_bike = len(bike_orders)
-    else:
-        print(f'No bikes assigned')
-        last_bike = 0
+    dronetype1_orders_declined_range = [order for drone, order in orders_declined_by_drones_range if
+                                          isinstance(drone, DroneType1)]
+    dronetype2_orders_declined_range = [order for drone, order in orders_declined_by_drones_range if
+                                          isinstance(drone, DroneType2)]
+    dronetype3_orders_declined_range = [order for drone, order in orders_declined_by_drones_range if
+                                          isinstance(drone, DroneType3)]
+    defaultdrone_orders_declined_range = [order for drone, order in orders_declined_by_drones_range if
+                                            isinstance(drone, DefaultDrone)]
 
-    if len(drone_orders_1) > 0:
-        last_drone_1 = len(drone_orders_1)
-    else:
-        print(f'Drone type 1 not assigned')
-        last_drone_1 = 0
 
-    if len(drone_orders_2) > 0:
-        last_drone_2 = len(drone_orders_2)
-    else:
-        print(f'Drone type 2 not assigned')
-        last_drone_2 = 0
+    num_orders_total = len(bike_orders_delivered) + len(drone_orders_delivered)
 
-    if len(drone_orders_3) > 0:
-        last_drone_3 = len(drone_orders_3)
-    else:
-        print(f'Drone type 3 not assigned')
-        last_drone_3 = 0
+    print(f'Total order: {num_orders_total}')
 
-    if len(drone_orders_default) > 0:
-        last_drone_default = len(drone_orders_default)
-    else:
-        print(f'DefaultDrone not assigned')
-        last_drone_default = 0
+    label = ['Orders delivered by bike', 'Orders delivered by DroneType1', 'Orders delivered by DroneType2', 'Orders delivered by DroneType3', 'Orders delivered by DefaultDrone', 'Total drone orders delivered', 'Orders declined by drones due to battery', 'Orders declined by drones due to range','Total orders delivered']
+    data_orders = [len(bike_orders_delivered), len(dronetype1_orders_delivered), len(dronetype2_orders_delivered), len(dronetype3_orders_delivered), len(defaultdrone_orders_delivered), len(drone_orders_delivered),
+                   len(orders_declined_by_drones_battery), len(orders_declined_by_drones_range), num_orders_total]
 
-    #drone_total_order = last_drone_1 + last_drone_2 + last_drone_3 + last_drone_default
-    declined_orders = len(declined)
-    # declined_orders = len(declined) - 1 if len(declined) > 0 else 0
-
-    """ if len(drone_decline_orders_1) > 0:
-        decline_last_drone_1 = -abs(drone_orders_1.pop())
-    else:
-        print(f'Drone type 1 no declined orders')
-        decline_last_drone_1=0
-
-    if len(drone_decline_orders_2) > 0:
-        decline_last_drone_2 = -abs(drone_orders_2.pop())
-    else:
-        print(f'Drone type 2 no declined orders')
-        decline_last_drone_2=0
-    
-    if len(drone_decline_orders_3) > 0:
-        decline_last_drone_3 = -abs(drone_orders_3.pop())
-    else:
-        print(f'Drone type 3 no declined orders')
-        decline_last_drone_3=0
-
-    drone_decline_total_order = decline_last_drone_1 + decline_last_drone_2 + decline_last_drone_3 """
-
-    orders_in_total = last_bike + drone_orders_total
-
-    print(f'Total order: {orders_in_total}')
-    bike_percent = round((last_bike / orders_in_total) * 100) if last_bike > 0 else 0
-    drone_1_percent = round((last_drone_1 / orders_in_total) * 100) if last_drone_1 > 0 else 0
-    drone_2_percent = round((last_drone_2 / orders_in_total) * 100) if last_drone_2 > 0 else 0
-    drone_3_percent = round((last_drone_3 / orders_in_total) * 100) if last_drone_3 > 0 else 0
-    drone_default_percent = round((last_drone_default / orders_in_total) * 100) if last_drone_default > 0 else 0
-
-    drone_percent = drone_1_percent + drone_2_percent + drone_3_percent + drone_default_percent
-    orders_percent = bike_percent + drone_1_percent + drone_2_percent + drone_3_percent + drone_default_percent
-    declined_orders_percent = round((declined_orders / drone_orders_total) * 100) if declined_orders > 0 else 0
-
-    label = ['Bike', 'DroneType1', 'DroneType2', 'DroneType3', 'DefaultDrone', 'Drone total', 'Orders declined by drones', 'Total']
-    data_orders = [last_bike, last_drone_1, last_drone_2, last_drone_3, last_drone_default, drone_orders_total,
-                   declined_orders, orders_in_total]
-    data_percent = [bike_percent, drone_1_percent, drone_2_percent, drone_3_percent, drone_default_percent,
-                    drone_percent, declined_orders_percent, orders_percent]
-
-    data = list(zip(data_orders, data_percent))
-    df = pd.DataFrame(data, columns=['Orders', 'Percent'], index=label)
-    print(df)
-
-    x = np.arange(len(label))  # the label locations
-    width = 0.35  # the width of the bars
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x - width / 2, data_orders, width, label='Number of orders')
-    rects2 = ax.bar(x + width / 2, data_percent, width, label='Orders in percent')
-    # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_ylabel('Type')
-    ax.set_title('Number of deliveries', fontsize=14, fontweight='bold')
-    ax.set_xticks(x)
-    ax.set_xticklabels(label, rotation=45)
-    ax.legend()
-
-    def autolabel(rects):
-        """Attach a text label above each bar in *rects*, displaying its height."""
-        for rect in rects:
-            height = rect.get_height()
-            ax.annotate('{}'.format(height),
-                        xy=(rect.get_x() + rect.get_width() / 2, height),
-                        xytext=(0, 3),  # 3 points vertical offset
-                        textcoords="offset points",
-                        ha='center', va='bottom')
-
-    autolabel(rects1)
-    autolabel(rects2)
-
     fig.tight_layout()
-    #plt.savefig("Number of deliveries.jpg")
+    ax.set_xticklabels(label, rotation=45)
+    bars = ax.bar(label, data_orders, width=0.5)
+    ax.bar_label(bars)
+
     plt.show()
 
 

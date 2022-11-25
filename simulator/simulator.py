@@ -278,10 +278,10 @@ def accept_orders(current_time):
                 #         STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
 
         if not within_range and most_urgent_order.id not in STATS.orders_declined_by_drones_range:
-            STATS.orders_declined_by_drones_range.append(most_urgent_order.id)
+            STATS.orders_declined_by_drones_range.append((drone, most_urgent_order.id))
 
         if not order_flag and most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
-            STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
+            STATS.orders_declined_by_drones_battery.append((drone, most_urgent_order.id))
 
             print(
                 f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
@@ -333,15 +333,15 @@ def print_results():
     print(f"# orders made: {STATS.total_orders_made}")
     print(f"# orders in end queue: {len(orders)}")
     print(f"# orders delivered: {STATS.total_orders_delivered}")
-    print(f"# bike orders delivered: {STATS.bike_orders_delivered}")
-    print(f"# drone orders delivered: {STATS.drone_orders_delivered}")
+    print(f"# bike orders delivered: {len(STATS.bike_orders_delivered)}")
+    print(f"# drone orders delivered: {len(STATS.drone_orders_delivered)}")
     print(f"# orders declined by drones due to insufficient battery: "
           f"{len(STATS.orders_declined_by_drones_battery)}")
     print(f"# orders declined by drones due to distance: "
           f"{len(STATS.orders_declined_by_drones_range)}")
     try:
-        print(f"Avg. bike delivery time: {STATS.avg_bike[-1][1]} min")
-        print(f"Avg. drone delivery time: {STATS.avg_drone[-1][1]} min")
+        print(f"Avg. bike delivery time: {STATS.avg_bike_delivery_times[-1][1]} min")
+        print(f"Avg. drone delivery time: {STATS.avg_drone_delivery_times[-1][1]} min")
     except IndexError:
         pass
 
