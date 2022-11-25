@@ -279,10 +279,9 @@ def accept_orders(current_time):
                 #     if most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
                 #         STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
 
-        if not within_range and most_urgent_order.id not in STATS.orders_declined_by_drones_range:
+        if not within_range and (drone, most_urgent_order.id) not in STATS.orders_declined_by_drones_range:
             STATS.orders_declined_by_drones_range.append((drone, most_urgent_order.id))
-
-        if not order_flag and most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
+        elif not order_flag and (drone, most_urgent_order.id) not in STATS.orders_declined_by_drones_battery:
             STATS.orders_declined_by_drones_battery.append((drone, most_urgent_order.id))
 
             print(
