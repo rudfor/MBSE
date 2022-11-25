@@ -57,6 +57,7 @@ def number_of_deliveries(bike_orders_delivered, drone_orders_delivered, orders_d
 
     num_orders_total = len(bike_orders_delivered) + len(drone_orders_delivered)
 
+    print(f"bike_orders_delivered: {len(bike_orders_delivered)}")
     print(f'Total order: {num_orders_total}')
 
     label = ['Orders delivered by bike', 'Orders delivered by DroneType1', 'Orders delivered by DroneType2',
@@ -69,10 +70,10 @@ def number_of_deliveries(bike_orders_delivered, drone_orders_delivered, orders_d
 
     fig, ax = plt.subplots()
 
-    ax.set_xticklabels(label, rotation=45)
-    bars = ax.bar(label, data_orders, width=0.5)
+    bars = ax.barh(label, data_orders)
     ax.bar_label(bars)
-
+    ax.margins(x=0.1)
+    ax.axvline(x=num_orders_total, color='b', label='axvline - full height')
     fig.tight_layout()
 
     plt.show()

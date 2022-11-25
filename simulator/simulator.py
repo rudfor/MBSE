@@ -89,6 +89,7 @@ def get_rain_interval():
         return min(rain_t1, rain_t2), max(rain_t1, rain_t2)
     return None
 
+
 def get_order_factor(current_time_minutes):
     day, hour, _ = get_clock(current_time_minutes)
 
@@ -102,7 +103,6 @@ def get_order_factor(current_time_minutes):
     return order_factor
 
 
-
 # Assume simulator starts monday 00:00
 def run_simulator():
     current_time_minutes = 0
@@ -110,7 +110,8 @@ def run_simulator():
     day = -1
 
     # Let's always start with an order, for testing purposes
-    next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(get_order_factor(current_time_minutes)), None)
+    next_order = Event(EventType.Order,
+                       ORDER_GENERATOR.generate_time_until_order(get_order_factor(current_time_minutes)), None)
     STATS.total_orders_made += 1
 
     print_simulation_configuration()
@@ -148,14 +149,11 @@ def run_simulator():
         if args.PLOT:
             MAP.plot_courier_paths(SYSTEM.couriers)
 
-
         # Get next event
         next_event = get_next_event(SYSTEM, next_order)
 
         # Increment and print current time
         current_time_minutes += next_event.event_time
-
-
 
         # Charge drones
         for drone in SYSTEM.drones():
@@ -194,8 +192,6 @@ def run_simulator():
                         STATS.update_drone_stats(current_time_minutes, event_courier)
 
         accept_orders(current_time_minutes)
-
-
 
     print_results()
     print()

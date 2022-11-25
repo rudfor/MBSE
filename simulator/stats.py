@@ -80,7 +80,7 @@ class Stats:
 
     def plot_results(self):
         pass
-        number_of_deliveries(self.bike_orders, self.drone_orders, self.orders_declined_by_drones_battery, self.orders_declined_by_drones_range)
+        number_of_deliveries(self.bike_orders_delivered, self.drone_orders_delivered, self.orders_declined_by_drones_battery, self.orders_declined_by_drones_range)
         delivery_time_intervals(self.bike_time, self.drone_time)
         delivery_threshold(self.bike_time, self.drone_time)
         # average_time_delivery(self.avg_bike, 'bike')
