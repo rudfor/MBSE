@@ -1,4 +1,4 @@
-from display.df_cost_time import number_of_deliveries, delivery_time_intervals, delivery_threshold
+from display.df_cost_time import drones_performance, number_of_deliveries, delivery_time_intervals, delivery_threshold
 
 
 class Stats:
@@ -70,12 +70,12 @@ class Stats:
         # self.data_drone.append(
         #     (current_time_minutes, self.drone_total_delivery_time, self.drone_orders_delivered, charged_total, event_drone.id))
         # self.drone_orders.append((event_drone, self.drone_orders_delivered))
-
+        order_delivery_time = current_time_minutes - event_drone.order.time_ordered
         self.drone_orders_delivered.append((event_drone, event_drone.order))
         avg_drone_delivery_time = self.drone_total_delivery_time / len(self.drone_orders_delivered)
         self.avg_drone_delivery_times.append((current_time_minutes, avg_drone_delivery_time, event_drone.id))
 
-        order_delivery_time = current_time_minutes - event_drone.order.time_ordered
+        
         self.drone_time.append((event_drone, order_delivery_time, time_to_threshold))
 
     def plot_results(self):
@@ -83,6 +83,7 @@ class Stats:
         number_of_deliveries(self.bike_orders_delivered, self.drone_orders_delivered, self.orders_declined_by_drones_battery, self.orders_declined_by_drones_range)
         delivery_time_intervals(self.bike_time, self.drone_time)
         delivery_threshold(self.bike_time, self.drone_time)
+        drones_performance(self.drone_time)
         # average_time_delivery(self.avg_bike, 'bike')
         # average_time_delivery(self.avg_drone, 'drone')
         # graph_plotting(self.bike_orders, bike_cost(self.data_bike,self.sim_time), self.drone_orders, drone_cost(self.data_drone))
