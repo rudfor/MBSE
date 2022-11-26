@@ -46,7 +46,8 @@ class Bike(Courier):
                 else:
                     if self.order_distances:
                         self.distance_to_destination = self.order_distances.pop(0)
-                    self.orders_delivered = 0
+                        self.orders_delivered += 1
+                    #self.orders_delivered = 0
                     self.orders = []
                     self.num_orders_taken = 0
                     self.update_arrival()
@@ -81,6 +82,7 @@ class Bike(Courier):
         return len(self.orders) < self.order_limit
 
     def take_orders(self, shortest_route, shortest_route_distances):
+        self.orders_delivered = 0
         self.num_orders_taken = len(self.orders)
         self.shortest_route = shortest_route
         orders_sorted = []

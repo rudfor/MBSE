@@ -38,9 +38,9 @@ class Map:
                 for d1, d2 in zip(courier.shortest_route, courier.shortest_route[1:]):
                     sp = ox.distance.shortest_path(self.G, d1, d2, weight='length', cpus=1)
                     bike_paths.append(sp)
-                    if courier.orders_delivered == i:
+                    if i == courier.orders_delivered:
                         bike_paths_colors.append("g")
-                    elif courier.orders_delivered < i:
+                    elif i > courier.orders_delivered:
                         bike_paths_colors.append("b")
                     else:
                         bike_paths_colors.append("r")
