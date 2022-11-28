@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from enum import Enum
 
+import numpy
+
 
 class CourierState(Enum):
     Standby = 1
@@ -51,7 +53,7 @@ class Courier:
         return True
 
     def has_arrived(self):
-        return self.distance_to_destination <= 0
+        return numpy.isclose(self.distance_to_destination, 0)
 
     @abstractmethod
     def status(self):

@@ -184,7 +184,7 @@ def run_simulator():
                 print(f"EVENT: {event_courier.courier_type()} {event_courier.id} {courier_event_str}")
 
                 # Order delivered, update stats
-                if not event_courier.is_standby():
+                if not event_courier.is_standby() :
                     STATS.total_orders_delivered += 1
                     #STATS.update_avg_order_time(current_time_minutes, event_courier)
                     STATS.order_interarrival_time.append((current_time_minutes, args.BASE_ORDER_INTERARRIVAL_TIME * order_factor))
@@ -280,10 +280,12 @@ def accept_orders(current_time):
                 #     if most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
                 #         STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
 
-        if not within_range and (drone, most_urgent_order.id) not in STATS.orders_declined_by_drones_range:
-            STATS.orders_declined_by_drones_range.append((drone, most_urgent_order.id))
-        elif not order_flag and (drone, most_urgent_order.id) not in STATS.orders_declined_by_drones_battery:
-            STATS.orders_declined_by_drones_battery.append((drone, most_urgent_order.id))
+        if not within_range:
+            if (None, most_urgent_order.id) not in STATS.orders_declined_by_drones_range:
+                STATS.orders_declined_by_drones_range.append((None, most_urgent_order.id))
+        elif not order_flag:
+            if (None, most_urgent_order.id) not in STATS.orders_declined_by_drones_battery:
+                STATS.orders_declined_by_drones_battery.append((None, most_urgent_order.id))
 
             print(
                 f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"

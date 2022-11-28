@@ -64,6 +64,8 @@ class Map:
 
             drone_path = None
             drone_path_color = None
+            dpc1 = None
+            dpc2 = None
             if courier.is_standby():
                 drone_path_color = "y"
                 drone_path = [KITCHEN_NODE_ID, KITCHEN_NODE_ID]
@@ -72,7 +74,7 @@ class Map:
                 if courier.state == CourierState.ReturningToKitchen:
                     drone_path_color = "r"
                 elif courier.state == CourierState.DeliveringOrder:
-                    drone_path_color = "b"
+                    drone_path_color = "g"
 
             if ax is None:
                 # plot the graph but not the route, and override any user show/close
@@ -93,6 +95,8 @@ class Map:
             # scatterplot origin and destination points (first/last nodes in route)
             x = (self.G.nodes[route[0]]["x"], self.G.nodes[route[-1]]["x"])
             y = (self.G.nodes[route[0]]["y"], self.G.nodes[route[-1]]["y"])
+            ax.scatter(x, y, s=orig_dest_size, c=route_color, alpha=route_alpha, edgecolor="none")
+            ax.plot(x, y, c=route_color, lw=route_linewidth, alpha=route_alpha)
             ax.scatter(x, y, s=orig_dest_size, c=route_color, alpha=route_alpha, edgecolor="none")
             ax.plot(x, y, c=route_color, lw=route_linewidth, alpha=route_alpha)
 
