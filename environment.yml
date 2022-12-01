@@ -1,8 +1,0 @@
-name: MBSE
-channels:
-  - defaults
-dependencies:
-  - python=3.10.6
-  - setuptools
-  - wheel
-prefix: /home/rudolfaf/.conda/envs/MBSE

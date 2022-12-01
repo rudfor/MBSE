@@ -38,9 +38,9 @@ class Map:
                 for d1, d2 in zip(courier.shortest_route, courier.shortest_route[1:]):
                     sp = ox.distance.shortest_path(self.G, d1, d2, weight='length', cpus=1)
                     bike_paths.append(sp)
-                    if courier.orders_delivered == i:
+                    if i == courier.orders_delivered:
                         bike_paths_colors.append("g")
-                    elif courier.orders_delivered < i:
+                    elif i > courier.orders_delivered:
                         bike_paths_colors.append("b")
                     else:
                         bike_paths_colors.append("r")
@@ -64,6 +64,8 @@ class Map:
 
             drone_path = None
             drone_path_color = None
+            dpc1 = None
+            dpc2 = None
             if courier.is_standby():
                 drone_path_color = "y"
                 drone_path = [KITCHEN_NODE_ID, KITCHEN_NODE_ID]
@@ -72,14 +74,14 @@ class Map:
                 if courier.state == CourierState.ReturningToKitchen:
                     drone_path_color = "r"
                 elif courier.state == CourierState.DeliveringOrder:
-                    drone_path_color = "b"
+                    drone_path_color = "g"
 
             if ax is None:
                 # plot the graph but not the route, and override any user show/close
                 # args for now: we'll do that later
                 override = {"show", "save", "close"}
                 kwargs = {}  # {k: v for k, v in pg_kwargs.items() if k not in override}
-                fig, ax = ox.plot.plot_graph(self.G, show=False, save=False, close=False, route_alpha=0.75, **kwargs)
+                fig, ax = ox.plot.plot_graph(self.G, show=False, save=False, close=False, **kwargs)
             else:
                 fig = ax.figure
 
@@ -93,6 +95,8 @@ class Map:
             # scatterplot origin and destination points (first/last nodes in route)
             x = (self.G.nodes[route[0]]["x"], self.G.nodes[route[-1]]["x"])
             y = (self.G.nodes[route[0]]["y"], self.G.nodes[route[-1]]["y"])
+            ax.scatter(x, y, s=orig_dest_size, c=route_color, alpha=route_alpha, edgecolor="none")
+            ax.plot(x, y, c=route_color, lw=route_linewidth, alpha=route_alpha)
             ax.scatter(x, y, s=orig_dest_size, c=route_color, alpha=route_alpha, edgecolor="none")
             ax.plot(x, y, c=route_color, lw=route_linewidth, alpha=route_alpha)
 
@@ -144,9 +148,9 @@ class Map:
         shortest_route_distances = [distances_dict[d1][d2] for d1, d2 in zip(shortest_route, shortest_route[1:])]
 
         # for route in all_routes:
-        #     print(route)
-        #     print("length:")
-        #     print(self.route_length(distances_dict, route))
+        #     simlog(route)
+        #     simlog("length:")
+        #     simlog(self.route_length(distances_dict, route))
 
         return shortest_route, shortest_route_distances
 

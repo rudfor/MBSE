@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from enum import Enum
 
+import numpy
+
 
 class CourierState(Enum):
     Standby = 1
@@ -20,18 +22,11 @@ class Courier:
         self.id = Courier.id_counter
         Courier.id_counter += 1
 
-    def move(self, delta_time_minutes):
-        if not self.is_standby():
-            self.distance_to_destination -= delta_time_minutes * self.avg_speed
-
-            if self.has_arrived():
-                self.update_arrival()
-
-    def is_delivering(self):
-        return self.order is not None
+    def move(self, delta_time_minutes, traffic_factor, weather_factor):
+        pass
 
     def time_to_destination(self):
-        return self.distance_to_destination / self.avg_speed
+        pass
 
     def is_standby(self):
         return self.state == CourierState.Standby
@@ -51,7 +46,7 @@ class Courier:
         return True
 
     def has_arrived(self):
-        return self.distance_to_destination <= 0
+        return numpy.isclose(self.distance_to_destination, 0)
 
     @abstractmethod
     def status(self):
