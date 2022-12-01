@@ -113,6 +113,7 @@ def number_of_deliveries(
     fig, ax = plt.subplots()
     plt.xlabel("Number of orders (%)")
     plt.xlim([0, 100])
+    plt.title("Order delivery", fontsize=14, fontweight="bold")
     bars = ax.barh(labels, orders_data)
     # ax.bar_label(bars)
     ax.margins(x=0.3)
@@ -130,7 +131,7 @@ def number_of_deliveries(
             xytext=(space, 0),  # Horizontally shift label by `space`
             textcoords="offset points",
             va='center')
-
+    
     plt.show()
 
 
@@ -230,9 +231,10 @@ def delivery_threshold(bike, drone):
     )
 
     fig, ax = plt.subplots()
-    ax.set_title("Delivered orders threshold performance", pad=25, fontweight="bold")
-    ax.pie(sizes, labels=labels, autopct="%1.1f%%", shadow=True, startangle=90)
+    ax.set_title("On-time delivery performance", pad=25, fontweight="bold", fontsize=14)
+    ax.pie(sizes, autopct="%1.2f%%", shadow=True, startangle=90)
     ax.axis("equal")
+    plt.legend(labels)
 
     plt.show()
 
@@ -382,7 +384,7 @@ def drones_performance(drone_orders):
 
     ax.set_ylabel("%")
     ax.set_title(
-        "Delivered orders threshold performance per drone type", fontsize=14, fontweight="bold"
+        "On-time delivery performance per drone type", fontsize=14, fontweight="bold"
     )
     ax.set_xticks(x, labels)
     ax.legend()
@@ -404,7 +406,7 @@ def average_time_delivery(bike_data, drone_data, order_interarrival_time):
              label='Order interarrival time')
     plt.xlabel('Elapsed time (minutes)', fontsize=10)
     plt.ylabel('Time (minutes)', fontsize=10)
-
+    plt.title("Average delivery time", fontsize=14, fontweight="bold")
     plt.legend()
     plt.show()
 

@@ -94,7 +94,8 @@ class Stats:
                              self.orders_declined_by_drones_battery, self.orders_declined_by_drones_range)
         delivery_time_intervals(self.bike_time, self.drone_time)
         delivery_threshold(self.bike_time, self.drone_time)
-        drones_performance(self.drone_time)
+        if self.drone_time:
+            drones_performance(self.drone_time)
         average_time_delivery(self.avg_bike_delivery_times, self.avg_drone_delivery_times, self.order_interarrival_time)
         #system_cost(self.bike_orders, bike_cost(self.data_bike, self.sim_time), self.drone_orders, drone_cost(self.data_drone))
         system_cost(self.bike_orders_delivered, self.drone_orders_delivered)
