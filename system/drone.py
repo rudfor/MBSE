@@ -91,7 +91,7 @@ class DroneType1(Drone):
         self.battery = 25  # min
         self.range = 3200  # m
         self.charge_time = 60  # 60 - 90 min
-        self.avg_speed = 15 / 2 * 60  # m/min  # m/s
+        self.avg_speed = 15 * 60  # m/min  # m/s
         self.cargo_weight = 8  # kg
 
     def courier_type(self):
@@ -108,7 +108,7 @@ class DroneType2(Drone):
         self.battery = 70  # min
         self.range = 5000  # m
         self.charge_time = 90  # 60 - 90 min
-        self.avg_speed = 15.5 / 2 * 60  # m/min  # m/s
+        self.avg_speed = 15 * 60  # m/min  # m/s
         self.cargo_weight = 6  # kg
 
     def courier_type(self):
@@ -125,7 +125,7 @@ class DroneType3(Drone):
         self.battery = 70  # min
         self.range = 15000  # m
         self.charge_time = 90  # 60 - 90 min
-        self.avg_speed = 15 / 2 * 60  # m/min  # m/s
+        self.avg_speed = 15 * 60  # m/min  # m/s # Can fly maximumm 56 km/h
         self.cargo_weight = 11  # kg
 
     def courier_type(self):
