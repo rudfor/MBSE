@@ -188,8 +188,8 @@ def delivery_time_intervals(bike, drone):
 
 def delivery_threshold(bike, drone):
     num_bike_orders_delivered = len(bike)
-    num_bike_orders_delivered_on_time = len([t for t in bike if t[2] >= 0])
-    num_bike_orders_delivered_late = len([t for t in bike if t[2] < 0])
+    num_bike_orders_delivered_on_time = len([t for t in bike if t[2]])
+    num_bike_orders_delivered_late = len([t for t in bike if not t[2]])
 
     bike_on_time_percent = (
         round(num_bike_orders_delivered_on_time / num_bike_orders_delivered * 100)
