@@ -98,7 +98,7 @@ class DroneType1(Drone):
 
 class DroneType2(Drone):
     # https://uavsystemsinternational.com/products/aurelia-x6-max-ready-to-fly
-    cost = 60.249  # DKK
+    cost = 60249  # DKK
 
     def __init__(self, position):
         super().__init__(position)
@@ -115,7 +115,7 @@ class DroneType2(Drone):
 
 class DroneType3(Drone):
     # https://uavsystemsinternational.com/products/aurelia-x8-max-ready-to-fly
-    cost = 75.502  # DKK
+    cost = 75502  # DKK
 
     def __init__(self, position):
         super().__init__(position)
