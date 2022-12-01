@@ -101,7 +101,7 @@ class DroneType2(Drone):
 
     def __init__(self, position):
         super().__init__(position)
-        self.cost = 60.249  # DKK
+        self.cost = 60249  # DKK
         self.battery_capacity = 70
         self.battery = 70  # min
         self.range = 5000 # m
@@ -118,7 +118,7 @@ class DroneType3(Drone):
 
     def __init__(self, position):
         super().__init__(position)
-        self.cost = 75.502  # DKK
+        self.cost = 75502  # DKK
         self.battery_capacity = 70
         self.battery = 70  # min
         self.range = 15000 # m
