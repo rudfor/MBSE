@@ -1,6 +1,7 @@
 from display.df_cost_time import number_of_deliveries, delivery_time_intervals, delivery_threshold, \
-    average_time_delivery
+    average_time_delivery, system_cost, bike_cost, drone_cost
 from display.df_cost_time import drones_performance, number_of_deliveries, delivery_time_intervals, delivery_threshold
+from utility.argparser import args
 
 
 class Stats:
@@ -53,7 +54,7 @@ class Stats:
 
         # Avg. delivery time
         self.bike_total_delivery_time += order_delivery_time
-        self.bike_orders_delivered.append(event_bike.last_order_delivered)
+        self.bike_orders_delivered.append((event_bike.last_order_delivered, current_time_minutes))
         avg_bike_delivery_time = self.bike_total_delivery_time / len(self.bike_orders_delivered)
         self.avg_bike_delivery_times.append((current_time_minutes, avg_bike_delivery_time))
 
@@ -83,7 +84,7 @@ class Stats:
 
         # Avg. delivery time
         self.drone_total_delivery_time += order_delivery_time
-        self.drone_orders_delivered.append((event_drone, event_drone.order))
+        self.drone_orders_delivered.append((event_drone, event_drone.order, current_time_minutes))
         avg_drone_delivery_time = self.drone_total_delivery_time / len(self.drone_orders_delivered)
         self.avg_drone_delivery_times.append((current_time_minutes, avg_drone_delivery_time))
 
@@ -95,4 +96,5 @@ class Stats:
         delivery_threshold(self.bike_time, self.drone_time)
         drones_performance(self.drone_time)
         average_time_delivery(self.avg_bike_delivery_times, self.avg_drone_delivery_times, self.order_interarrival_time)
-        # graph_plotting(self.bike_orders, bike_cost(self.data_bike,self.sim_time), self.drone_orders, drone_cost(self.data_drone))
+        #system_cost(self.bike_orders, bike_cost(self.data_bike, self.sim_time), self.drone_orders, drone_cost(self.data_drone))
+        system_cost(self.bike_orders_delivered, self.drone_orders_delivered)

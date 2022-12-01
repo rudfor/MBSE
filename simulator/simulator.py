@@ -9,6 +9,7 @@ from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
 from system.drone import Drone
+from utility.log import simlog
 from utility.point import Point
 from utility.argparser import args
 import random
@@ -116,21 +117,26 @@ def run_simulator():
 
     print_simulation_configuration()
 
+    num_steps = 0
     # Main loop. Simulate a specified number of minutes.
     while current_time_minutes <= TIME_LIMIT_MINUTES:
-        # Print time info
+        num_steps += 1
+        if not args.LOG and num_steps % 100 == 0:
+            print(f"Time: {current_time_minutes} min")
+
+        # simlog time info
         daystr, hour, minutes = get_clock(current_time_minutes)
-        print(f"Time: {current_time_minutes:.2f} min. Clock: {daystr}, {hour}: {minutes}")
+        simlog(f"Time: {current_time_minutes:.2f} min. Clock: {daystr}, {hour}: {minutes}")
 
         traffic_factor = get_traffic_factor(current_time_minutes)
         weather_factor, day, rain_interval = get_weather_factor(current_time_minutes, day, rain_interval)
         order_factor = get_order_factor(current_time_minutes)
 
         traffic_status = "Ordinary" if traffic_factor == 1 else "Busy"
-        print(f"TRAFFIC: {traffic_status} ({traffic_factor})")
+        simlog(f"TRAFFIC: {traffic_status} ({traffic_factor})")
 
         weather_status = "Regular" if weather_factor == 1 else "Rainy"
-        print(f"WEATHER: {weather_status} ({weather_factor}) [{rain_interval}]")
+        simlog(f"WEATHER: {weather_status} ({weather_factor}) [{rain_interval}]")
 
         if .8 <= order_factor < 1:
             order_status = "Busy"
@@ -138,7 +144,7 @@ def run_simulator():
             order_status = "Rush hour"
         else:
             order_status = "Regular"
-        print(f"ORDERS: {order_status} ({order_factor})")
+        simlog(f"ORDERS: {order_status} ({order_factor})")
 
         # Adjust courier speed for traffic and weather
         for courier in SYSTEM.couriers:
@@ -152,7 +158,7 @@ def run_simulator():
         # Get next event
         next_event = get_next_event(SYSTEM, next_order)
 
-        # Increment and print current time
+        # Increment and simlog current time
         current_time_minutes += next_event.event_time
 
         # Charge drones
@@ -170,7 +176,7 @@ def run_simulator():
                 # Generate order with random destination and append it to the orders queue
                 order = ORDER_GENERATOR.generate_order(current_time_minutes)
                 orders.append(order)
-                print(f"EVENT: Incoming order {order}")
+                simlog(f"EVENT: Incoming order {order}")
 
                 next_order = Event(EventType.Order, ORDER_GENERATOR.generate_time_until_order(order_factor), None)
 
@@ -181,7 +187,7 @@ def run_simulator():
                 courier_event_str = "arrived at order destination" \
                     if next_event.event_obj.state == CourierState.ReturningToKitchen else "returned to kitchen"
 
-                print(f"EVENT: {event_courier.courier_type()} {event_courier.id} {courier_event_str}")
+                simlog(f"EVENT: {event_courier.courier_type()} {event_courier.id} {courier_event_str}")
 
                 # Order delivered, update stats
                 if not event_courier.is_standby() :
@@ -205,7 +211,7 @@ def get_weather_factor(current_time_minutes, day, rain_interval):
     if day_no(current_time_minutes) > day:
         day += 1
         rain_interval = get_rain_interval()
-        # print(rain_interval)
+        # simlog(rain_interval)
     if rain_interval and rain_interval[0] <= current_time_minutes % MINUTES_IN_DAY <= rain_interval[1]:
         weather_factor = random.uniform(0.8, 0.9)
     else:
@@ -260,34 +266,34 @@ def accept_orders(current_time):
     orders_taken = []
     # Try to assign orders to drones
     for most_urgent_order in orders_copy:
-        order_flag = False
-        within_range = False
+        order_flag = 0
+        within_range = 0
         if not drones_copy:
             break
         # Try to assign the order to a drone
         for drone in drones_copy:
             if drone.within_range(most_urgent_order):
-                within_range = True
+                within_range += 1
                 if drone.take_order(most_urgent_order):
-                    order_flag = True
+                    order_flag += 1
                     # drones_copy.remove(drone)
                     orders_taken.append(most_urgent_order)
                     orders.remove(most_urgent_order)
-                    print(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
+                    simlog(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
                           f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
                     break
                 # else:
                 #     if most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
                 #         STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
 
-        if not within_range:
+        if within_range == len(drones_copy):
             if (None, most_urgent_order.id) not in STATS.orders_declined_by_drones_range:
                 STATS.orders_declined_by_drones_range.append((None, most_urgent_order.id))
-        elif not order_flag:
+        elif not order_flag == len(drones_copy):
             if (None, most_urgent_order.id) not in STATS.orders_declined_by_drones_battery:
                 STATS.orders_declined_by_drones_battery.append((None, most_urgent_order.id))
 
-            print(
+            simlog(
                 f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
                 f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order}")
 
@@ -305,7 +311,7 @@ def accept_orders(current_time):
                 most_urgent_order = orders_copy.pop(0)
                 bike.hold_order(most_urgent_order)
                 orders.remove(most_urgent_order)
-                print(f"ACTION: {bike.courier_type()} {bike.id} holds order {most_urgent_order}, "
+                simlog(f"ACTION: {bike.courier_type()} {bike.id} holds order {most_urgent_order}, "
                       f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
 
             break
@@ -318,18 +324,18 @@ def accept_orders(current_time):
             shortest_route, shortest_route_distances = MAP.shortest_route_for_delivery(
                 [o.destination_node for o in bike.orders])
 
-            print(f"ACTION: {bike.courier_type()} {bike.id} accepted orders:")
+            simlog(f"ACTION: {bike.courier_type()} {bike.id} accepted orders:")
             for order in bike.orders:
-                print(order)
+                simlog(order)
 
             # Start the delivery
             bike.take_orders(shortest_route, shortest_route_distances)
 
     if orders:
-        print(f"ACTION: No couriers to take the following {len(orders)} order(s):")
+        simlog(f"ACTION: No couriers to take the following {len(orders)} order(s):")
         for order in orders:
-            # print(order)
-            print(str(order) + f", time to threshold: {order.time_to_threshold(current_time):.2f} min")
+            # simlog(order)
+            simlog(str(order) + f", time to threshold: {order.time_to_threshold(current_time):.2f} min")
 
 
 def print_results():
@@ -360,7 +366,7 @@ def print_simulation_configuration():
 
 
 def print_state():
-    print("STATUS:")
+    simlog("STATUS:")
     for courier in SYSTEM.couriers:
-        print(courier.status())
-    print("-----------------------------------------------------------------------------------------------------------")
+        simlog(courier.status())
+    simlog("-----------------------------------------------------------------------------------------------------------")

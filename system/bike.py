@@ -6,6 +6,7 @@ import numpy
 from system.courier import Courier, CourierState
 from utility.argparser import args
 from utility.constants import BIKE_BREAKDOWN_DURATION
+from utility.log import simlog
 
 
 def breaks_down():
@@ -37,7 +38,7 @@ class Bike(Courier):
             if self.has_arrived():
                 # If there are more orders to deliver
                 self.last_order_delivered = self.order
-                print(self.last_order_delivered)
+                #print(self.last_order_delivered)
                 if self.state == CourierState.DeliveringOrder and self.orders:
                     # Prepare next order in route  
                     self.order = self.orders.pop(0)
@@ -95,7 +96,7 @@ class Bike(Courier):
         self.state = CourierState.DeliveringOrder
 
         if breaks_down():
-            print(f"Bike {self.id} breaks down along route, adding distance to simulate.")
+            simlog(f"Bike {self.id} breaks down along route, adding distance to simulate.")
             self.distance_to_destination += BIKE_BREAKDOWN_DURATION * self.avg_speed
 
     def holds_orders(self):

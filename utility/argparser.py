@@ -29,5 +29,6 @@ parser.add_argument("-t", "--time", type=int, default=300, dest="TIME", help="Ti
 parser.add_argument("-s", "--seed", type=int, default=2223, dest="SEED", help="Choose a custom seed (default: 2223)")
 parser.add_argument("--breakdown-rate", type=float, default=0.01, dest="BREAKDOWN_RATE", help="Rate of bike breakdown per order delivery")
 parser.add_argument("--interarrival-time", type=float, default=10, dest="BASE_ORDER_INTERARRIVAL_TIME", help="Order interarrival time (default: 30 min)")
+parser.add_argument("--log", action="store_true", default=False, dest="LOG", help="(default: False)")
 
 args = parser.parse_args()

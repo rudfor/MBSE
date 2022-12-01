@@ -30,29 +30,29 @@ def get_sim_time(data):
 
 # input: list of all orders for both bikes and drones also missed deliveries
 def number_of_deliveries(
-    bike_orders_delivered,
-    drone_orders_delivered,
-    orders_declined_by_drones_battery,
-    orders_declined_by_drones_range,
+        bike_orders_delivered,
+        drone_orders_delivered,
+        orders_declined_by_drones_battery,
+        orders_declined_by_drones_range,
 ):
     dronetype1_orders_delivered = [
         order
-        for drone, order in drone_orders_delivered
+        for drone, order, _ in drone_orders_delivered
         if isinstance(drone, DroneType1)
     ]
     dronetype2_orders_delivered = [
         order
-        for drone, order in drone_orders_delivered
+        for drone, order, _ in drone_orders_delivered
         if isinstance(drone, DroneType2)
     ]
     dronetype3_orders_delivered = [
         order
-        for drone, order in drone_orders_delivered
+        for drone, order, _ in drone_orders_delivered
         if isinstance(drone, DroneType3)
     ]
     defaultdrone_orders_delivered = [
         order
-        for drone, order in drone_orders_delivered
+        for drone, order, _ in drone_orders_delivered
         if isinstance(drone, DefaultDrone)
     ]
 
@@ -100,16 +100,16 @@ def number_of_deliveries(
 
     num_orders_total = len(bike_orders_delivered) + len(drone_orders_delivered)
 
-    #print(f"Total order: {num_orders_total}")
+    # cprint(f"Total order: {num_orders_total}")
 
-    data = [('Declined by drones due to battery', len(orders_declined_by_drones_battery)/num_orders_total*100),
-            ('Declined by drones due to range', len(orders_declined_by_drones_range)/num_orders_total*100),
-            ('Delivered by DroneType1', len(dronetype1_orders_delivered)/num_orders_total*100),
-            ('Delivered by DroneType2', len(dronetype2_orders_delivered)/num_orders_total*100),
-            ('Delivered by DroneType3', len(dronetype3_orders_delivered)/num_orders_total*100),
-            ('Delivered by DefaultDrone', len(defaultdrone_orders_delivered)/num_orders_total*100),
-            ('Delivered by drones', len(drone_orders_delivered)/num_orders_total*100),
-            ('Delivered by bikes', len(bike_orders_delivered)/num_orders_total*100)]
+    data = [('Declined by drones due to battery', len(orders_declined_by_drones_battery) / num_orders_total * 100),
+            ('Declined by drones due to range', len(orders_declined_by_drones_range) / num_orders_total * 100),
+            ('Delivered by DroneType1', len(dronetype1_orders_delivered) / num_orders_total * 100),
+            ('Delivered by DroneType2', len(dronetype2_orders_delivered) / num_orders_total * 100),
+            ('Delivered by DroneType3', len(dronetype3_orders_delivered) / num_orders_total * 100),
+            ('Delivered by DefaultDrone', len(defaultdrone_orders_delivered) / num_orders_total * 100),
+            ('Delivered by drones', len(drone_orders_delivered) / num_orders_total * 100),
+            ('Delivered by bikes', len(bike_orders_delivered) / num_orders_total * 100)]
     labels = [label for label, _ in data]
     orders_data = [n for _, n in data]
 
@@ -117,7 +117,7 @@ def number_of_deliveries(
     plt.xlabel("Number of orders (%)")
     plt.xlim([0, 100])
     bars = ax.barh(labels, orders_data)
-    #ax.bar_label(bars)
+    # ax.bar_label(bars)
     ax.margins(x=0.3)
     fig.tight_layout()
 
@@ -207,7 +207,7 @@ def delivery_threshold(bike, drone):
     num_drone_orders_delivered = len(drone)
     num_drone_orders_delivered_on_time = len([t for t in drone if t[2] >= 0])
     num_drone_orders_delivered_late = len([t for t in drone if t[2] < 0])
-    
+
     drone_on_time_percent = (
         round(num_drone_orders_delivered_on_time / num_drone_orders_delivered * 100)
         if num_drone_orders_delivered > 0
@@ -399,10 +399,12 @@ def drones_performance(drone_orders):
 def average_time_delivery(bike_data, drone_data, order_interarrival_time):
     # plot the graph
     plt.style.use('ggplot')
-    #plt.title(f'Average time for delivering {plot} \n', fontsize=14, fontweight='bold')
+    # plt.title(f'Average time for delivering {plot} \n', fontsize=14, fontweight='bold')
     plt.plot([time for time, _ in bike_data], [avg for _, avg in bike_data], 'r-', label='Avg. bike order time')
     plt.plot([time for time, _ in drone_data], [avg for _, avg in drone_data], 'b-', label='Avg. drone order time')
-    plt.plot([time for time, _ in order_interarrival_time], [interarrival_time for _, interarrival_time in order_interarrival_time], 'g--', label='Order interarrival time')
+    plt.plot([time for time, _ in order_interarrival_time],
+             [interarrival_time for _, interarrival_time in order_interarrival_time], 'g--',
+             label='Order interarrival time')
     plt.xlabel('Elapsed time (minutes)', fontsize=10)
     plt.ylabel('Time (minutes)', fontsize=10)
 
@@ -422,7 +424,7 @@ def bike_cost(data, time):
     bike = Bike(1)
     employees = args.NUM_BIKES
     delivery_wage = (
-        (bike.cost_hour / 60) * time * employees
+            (bike.cost_hour / 60) * time * employees
     )  # TIME_LIMIT_MINUTES #wage in minutes; wage in minutes*time of simulation*number of employees
     bike_total_orders = [i[2] for i in data]
     time_bike = [i[1] for i in data]
@@ -462,61 +464,41 @@ def drone_cost(data):
     drone_start_cost = drone_start_cost_1 + drone_start_cost_2 + drone_start_cost_3
     price_current = float(1.5)
     cost_drone = [i[3] * price_current for i in data]  # price for charging the drone
-    # print(f'validating Cost_drone {cost_drone}')
+    # cprint(f'validating Cost_drone {cost_drone}')
     if len(cost_drone) > 0:
         cost_drone[0] = 0
     drone_total_output = [
         (cost_drone[j] + drone_start_cost) / drone_total_orders[j]
         for j in range(0, len(data))
     ]
-    # print(f'Drone output: {drone_total_output}')
+    # cprint(f'Drone output: {drone_total_output}')
     return drone_total_output
 
 
 # Function to make a dataframe for panda and plot the result - input: bike time, bike cost, drone time and drone cost
-def graph_plotting(bike_order, bike, drone_order, drone):
-    bike_timestamp = [i for i in bike_order]
-    drone_timestamp = [i[1] for i in drone_order]
-    bike_data = [i for i in bike]
-    drone_data = [i for i in drone]
+def system_cost(bike_orders_delivered, drone_orders_delivered):
+    bike_costs_total = args.NUM_BIKES * args.BIKE_HOUR_COST / 60 * args.TIME
 
-    data_bike = list(zip(bike_order, bike))
-    data_drone = list(zip(drone_timestamp, drone))
+    drone_nums = [args.NUM_DD, args.NUM_DT1, args.NUM_DT2, args.NUM_DT3]
+    drone_costs = [DefaultDrone.cost, DroneType1.cost, DroneType2.cost, DroneType3.cost]
+    drone_costs_total = sum([num * cost for num, cost in zip(drone_nums, drone_costs)])
 
-    df_bike = pd.DataFrame(data_bike, columns=["Order", "Cost"])
-    df_drone = pd.DataFrame(data_drone, columns=["Order", "Cost"])
+    bike_times = [t for _, t in bike_orders_delivered]
+    drone_times = [t for _, _, t in drone_orders_delivered]
+    bs = [(t, 150 * (i+1) - bike_costs_total) for i, t in enumerate(bike_times)]
+    ds = [(t, 150 * (i+1) - drone_costs_total) for i, t in enumerate(drone_times)]
 
-    df = pd.DataFrame(data_bike, columns=["Order", "Cost"])
-    # plot the graph
-    plt.title("Cost/Order for bike compared to drone\n", fontsize=14, fontweight="bold")
-    plt.plot(bike_timestamp, bike_data, "b", label="Bicycle cost")
-    plt.plot(drone_timestamp, drone_data, "r", label="Drone cost")
-    plt.xlabel("Orders", fontsize=10)
-    plt.yscale("log")
+    t = np.arange(0., args.TIME, 1)
+    plt.title("Net profit by bikes and drones over time \n", fontsize=14, fontweight="bold")
+    #plt.plot(t, t, 'r--', t, t ** 2, 'bs', t, t ** 3, 'g^')
+    plt.plot(*zip(*bs), label="Net profit of bikes")
+    plt.plot(*zip(*ds), label="Net profit of drones")
+    #plt.plot(t, drone_costs_total, label="Drone cost")
+    #plt.axhline(y=drone_costs_total, color='r', label="Drone cost")
+    plt.xlabel("Time elapsed (min)", fontsize=10)
+    #plt.ylim([0, drone_costs_total * 1.01])
     plt.autoscale()
-    plt.ylabel("Cost", fontsize=10)
+    plt.ylabel("Net profit (DKK)", fontsize=10)
     plt.legend()
     # plt.savefig("Cost_Order.jpg")
     plt.show()
-
-    # title = 'Bikes and drones'
-    # today = date.today()
-    # path = os.path.join(os.path.dirname(__file__), '..', 'excel')
-    # isExist = os.path.exists(path)
-    # if not isExist:
-    #     # Create a new directory because it does not exist
-    #     os.makedirs(path)
-    #     print(f'The new directory {path} is created!')
-    # # path = 'D:\\Documents\\GitHub\MBSE\\'
-    # file_name = f'{title}-{today}.xlsx'
-    # save_file_name = os.path.join(path, file_name)
-    # print(f'Name and location for file: {save_file_name}')
-    #
-    # print(f'Saving the file')
-    # if df.empty == True:
-    #     print(f'The file is empty')
-    # else:
-    #     print(f'Saving...')
-    #     df.to_excel(save_file_name)
-    #
-    # print(f'Done')

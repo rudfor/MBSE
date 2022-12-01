@@ -1,6 +1,5 @@
 from abc import abstractmethod
 from system.courier import Courier, CourierState
-from turtle import position
 from utility.argparser import args
 
 
@@ -15,17 +14,17 @@ class Drone(Courier):
         self.cargo_weight = None  # kg
         self.range = None
         self.speed = None
-    
+
     def set_speed(self, weather_factor, traffic_factor):
-        self.speed = self.avg_speed * weather_factor
+        self.speed = self.avg_speed
 
     def move(self, delta_time_minutes, traffic_factor, weather_factor):
         if not self.is_standby():
             self.distance_to_destination -= delta_time_minutes * self.speed
             if self.state == CourierState.DeliveringOrder:
-                self.battery -= (delta_time_minutes * (1 + (self.order.weight / 2)))
+                self.battery -= (delta_time_minutes * (1 + (self.order.weight / 2))) / weather_factor
             else:
-                self.battery -= delta_time_minutes 
+                self.battery -= delta_time_minutes / weather_factor
             if self.has_arrived():
                 self.update_arrival()
 
@@ -40,7 +39,7 @@ class Drone(Courier):
             return True
         else:
             return False
-    
+
     def time_to_destination(self):
         return self.distance_to_destination / self.speed
 
@@ -62,11 +61,12 @@ class Drone(Courier):
                      f"/ {self.time_to_destination():.2f} min left. Remaining battery: {self.battery:.2f} min"
         return status_str
 
+
 class DefaultDrone(Drone):
+    cost = args.DRONE_COST  # DKK
 
     def __init__(self, position):
         super().__init__(position)
-        self.cost = args.DRONE_COST  # DKK
         self.battery_capacity = args.DRONE_BAT_CAP
         self.battery = args.DRONE_FLIGHT_TIME  # min
         self.range = args.DRONE_RANGE  # m
@@ -81,13 +81,13 @@ class DefaultDrone(Drone):
 
 class DroneType1(Drone):
     # https://uavsystemsinternational.com/products/tarot-t-18-ready-fly-drone/
+    cost = 38062  # DKK
 
     def __init__(self, position):
         super().__init__(position)
-        self.cost = 38062  # DKK
         self.battery_capacity = 25
         self.battery = 25  # min
-        self.range = 3200 # m
+        self.range = 3200  # m
         self.charge_time = 60  # 60 - 90 min
         self.avg_speed = 15 / 2 * 60  # m/min  # m/s
         self.cargo_weight = 8  # kg
@@ -98,13 +98,13 @@ class DroneType1(Drone):
 
 class DroneType2(Drone):
     # https://uavsystemsinternational.com/products/aurelia-x6-max-ready-to-fly
+    cost = 60.249  # DKK
 
     def __init__(self, position):
         super().__init__(position)
-        self.cost = 60.249  # DKK
         self.battery_capacity = 70
         self.battery = 70  # min
-        self.range = 5000 # m
+        self.range = 5000  # m
         self.charge_time = 90  # 60 - 90 min
         self.avg_speed = 15.5 / 2 * 60  # m/min  # m/s
         self.cargo_weight = 6  # kg
@@ -115,13 +115,13 @@ class DroneType2(Drone):
 
 class DroneType3(Drone):
     # https://uavsystemsinternational.com/products/aurelia-x8-max-ready-to-fly
+    cost = 75.502  # DKK
 
     def __init__(self, position):
         super().__init__(position)
-        self.cost = 75.502  # DKK
         self.battery_capacity = 70
         self.battery = 70  # min
-        self.range = 15000 # m
+        self.range = 15000  # m
         self.charge_time = 90  # 60 - 90 min
         self.avg_speed = 15 / 2 * 60  # m/min  # m/s
         self.cargo_weight = 11  # kg

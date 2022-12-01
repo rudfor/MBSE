@@ -148,9 +148,9 @@ class Map:
         shortest_route_distances = [distances_dict[d1][d2] for d1, d2 in zip(shortest_route, shortest_route[1:])]
 
         # for route in all_routes:
-        #     print(route)
-        #     print("length:")
-        #     print(self.route_length(distances_dict, route))
+        #     simlog(route)
+        #     simlog("length:")
+        #     simlog(self.route_length(distances_dict, route))
 
         return shortest_route, shortest_route_distances
 
