@@ -10,13 +10,10 @@ and y-axis is the labor productivity for that periode.
 """
 # For the data
 import matplotlib.pyplot as plt
-import pandas as pd
-import os
-from datetime import date
 import numpy as np
 
+from utility.constants import PROFIT_PER_ORDER
 # getting the class
-from system.bike import Bike
 from system.drone import DroneType1, DroneType2, DroneType3, DefaultDrone
 from utility.argparser import args
 
@@ -400,8 +397,8 @@ def average_time_delivery(bike_data, drone_data, order_interarrival_time):
     # plot the graph
     plt.style.use('ggplot')
     # plt.title(f'Average time for delivering {plot} \n', fontsize=14, fontweight='bold')
-    plt.plot([time for time, _ in bike_data], [avg for _, avg in bike_data], 'r-', label='Avg. bike order time')
-    plt.plot([time for time, _ in drone_data], [avg for _, avg in drone_data], 'b-', label='Avg. drone order time')
+    plt.plot([time for time, _ in bike_data], [avg for _, avg in bike_data], 'r-', label='Avg. bike delivery time')
+    plt.plot([time for time, _ in drone_data], [avg for _, avg in drone_data], 'b-', label='Avg. drone delivery time')
     plt.plot([time for time, _ in order_interarrival_time],
              [interarrival_time for _, interarrival_time in order_interarrival_time], 'g--',
              label='Order interarrival time')
@@ -410,69 +407,6 @@ def average_time_delivery(bike_data, drone_data, order_interarrival_time):
 
     plt.legend()
     plt.show()
-
-
-def bike_cost(data, time):
-    """
-    # Function Average cost of delivery for the cost of delivery for bike
-    # (Driver cost(monthly wage)*numbers of employees + Fuel_cost*miles + Vehicle cost*number_of_vehicle) / total numbers of deliveries for a given interval
-    # - input: timestamp(x-axe), total order time, orders in total
-
-    :param data:
-    :return:
-    """
-    bike = Bike(1)
-    employees = args.NUM_BIKES
-    delivery_wage = (
-            (bike.cost_hour / 60) * time * employees
-    )  # TIME_LIMIT_MINUTES #wage in minutes; wage in minutes*time of simulation*number of employees
-    bike_total_orders = [i[2] for i in data]
-    time_bike = [i[1] for i in data]
-    cost_bike = [i[1] * delivery_wage for i in data]
-    # bike_total_output = [cost_bike[i]/bike_total_orders[i] for i in range(0,len(data))]
-    bike_total_output = [
-        delivery_wage / bike_total_orders[i] for i in range(0, len(data))
-    ]
-    return bike_total_output
-
-
-def drone_cost(data):
-    """
-    Function Average cost of delivery for drone - input
-     (Driver cost(monthly wage)*numbers of employees + Fuel_cost*miles + Vehicle cost*number_of_vehicle) / total numbers of deliveries for a given interval
-     - input: timestamp(x-axe), total order time, orders in total
-    """
-
-    drone_orders_1 = [i for i in data if i[4] == 4]
-    drone_orders_2 = [i for i in data if i[4] == 5]
-    drone_orders_3 = [i for i in data if i[4] == 6]
-
-    drone1 = DroneType1(1)
-    drone2 = DroneType2(1)
-    drone3 = DroneType3(1)
-    time_drone = [i[1] for i in data]
-    drone_total_orders = [i[2] for i in data]
-    drone_start_cost_1 = (
-        drone1.cost * 5 if len(drone_orders_1) > 0 else 0
-    )  # drone cost*number of drones
-    drone_start_cost_2 = (
-        drone2.cost * 0 if len(drone_orders_2) > 0 else 0
-    )  # drone cost*number of drones
-    drone_start_cost_3 = (
-        drone3.cost * 0 if len(drone_orders_3) > 0 else 0
-    )  # drone cost*number of drones
-    drone_start_cost = drone_start_cost_1 + drone_start_cost_2 + drone_start_cost_3
-    price_current = float(1.5)
-    cost_drone = [i[3] * price_current for i in data]  # price for charging the drone
-    # cprint(f'validating Cost_drone {cost_drone}')
-    if len(cost_drone) > 0:
-        cost_drone[0] = 0
-    drone_total_output = [
-        (cost_drone[j] + drone_start_cost) / drone_total_orders[j]
-        for j in range(0, len(data))
-    ]
-    # cprint(f'Drone output: {drone_total_output}')
-    return drone_total_output
 
 
 # Function to make a dataframe for panda and plot the result - input: bike time, bike cost, drone time and drone cost
@@ -485,20 +419,14 @@ def system_cost(bike_orders_delivered, drone_orders_delivered):
 
     bike_times = [t for _, t in bike_orders_delivered]
     drone_times = [t for _, _, t in drone_orders_delivered]
-    bs = [(t, 150 * (i+1) - bike_costs_total) for i, t in enumerate(bike_times)]
-    ds = [(t, 150 * (i+1) - drone_costs_total) for i, t in enumerate(drone_times)]
+    bs = [(t, PROFIT_PER_ORDER * (i + 1) - bike_costs_total) for i, t in enumerate(bike_times)]
+    ds = [(t, PROFIT_PER_ORDER * (i + 1) - drone_costs_total) for i, t in enumerate(drone_times)]
 
-    t = np.arange(0., args.TIME, 1)
     plt.title("Net profit by bikes and drones over time \n", fontsize=14, fontweight="bold")
-    #plt.plot(t, t, 'r--', t, t ** 2, 'bs', t, t ** 3, 'g^')
     plt.plot(*zip(*bs), label="Net profit of bikes")
     plt.plot(*zip(*ds), label="Net profit of drones")
-    #plt.plot(t, drone_costs_total, label="Drone cost")
-    #plt.axhline(y=drone_costs_total, color='r', label="Drone cost")
     plt.xlabel("Time elapsed (min)", fontsize=10)
-    #plt.ylim([0, drone_costs_total * 1.01])
     plt.autoscale()
     plt.ylabel("Net profit (DKK)", fontsize=10)
     plt.legend()
-    # plt.savefig("Cost_Order.jpg")
     plt.show()

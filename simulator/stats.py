@@ -1,5 +1,5 @@
 from display.df_cost_time import number_of_deliveries, delivery_time_intervals, delivery_threshold, \
-    average_time_delivery, system_cost, bike_cost, drone_cost
+    average_time_delivery, system_cost
 from display.df_cost_time import drones_performance, number_of_deliveries, delivery_time_intervals, delivery_threshold
 from utility.argparser import args
 
