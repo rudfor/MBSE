@@ -23,17 +23,10 @@ class Courier:
         Courier.id_counter += 1
 
     def move(self, delta_time_minutes, traffic_factor, weather_factor):
-        if not self.is_standby():
-            self.distance_to_destination -= delta_time_minutes * self.avg_speed
-
-            if self.has_arrived():
-                self.update_arrival()
-
-    def is_delivering(self):
-        return self.order is not None
+        pass
 
     def time_to_destination(self):
-        return self.distance_to_destination / self.avg_speed
+        pass
 
     def is_standby(self):
         return self.state == CourierState.Standby

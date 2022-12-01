@@ -53,47 +53,47 @@ def number_of_deliveries(
         if isinstance(drone, DefaultDrone)
     ]
 
-    dronetype1_orders_declined_battery = [
-        order
-        for drone, order in orders_declined_by_drones_battery
-        if isinstance(drone, DroneType1)
-    ]
-    dronetype2_orders_declined_battery = [
-        order
-        for drone, order in orders_declined_by_drones_battery
-        if isinstance(drone, DroneType2)
-    ]
-    dronetype3_orders_declined_battery = [
-        order
-        for drone, order in orders_declined_by_drones_battery
-        if isinstance(drone, DroneType3)
-    ]
-    defaultdrone_orders_declined_battery = [
-        order
-        for drone, order in orders_declined_by_drones_battery
-        if isinstance(drone, DefaultDrone)
-    ]
-
-    dronetype1_orders_declined_range = [
-        order
-        for drone, order in orders_declined_by_drones_range
-        if isinstance(drone, DroneType1)
-    ]
-    dronetype2_orders_declined_range = [
-        order
-        for drone, order in orders_declined_by_drones_range
-        if isinstance(drone, DroneType2)
-    ]
-    dronetype3_orders_declined_range = [
-        order
-        for drone, order in orders_declined_by_drones_range
-        if isinstance(drone, DroneType3)
-    ]
-    defaultdrone_orders_declined_range = [
-        order
-        for drone, order in orders_declined_by_drones_range
-        if isinstance(drone, DefaultDrone)
-    ]
+    # dronetype1_orders_declined_battery = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_battery
+    #     if isinstance(drone, DroneType1)
+    # ]
+    # dronetype2_orders_declined_battery = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_battery
+    #     if isinstance(drone, DroneType2)
+    # ]
+    # dronetype3_orders_declined_battery = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_battery
+    #     if isinstance(drone, DroneType3)
+    # ]
+    # defaultdrone_orders_declined_battery = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_battery
+    #     if isinstance(drone, DefaultDrone)
+    # ]
+    #
+    # dronetype1_orders_declined_range = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_range
+    #     if isinstance(drone, DroneType1)
+    # ]
+    # dronetype2_orders_declined_range = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_range
+    #     if isinstance(drone, DroneType2)
+    # ]
+    # dronetype3_orders_declined_range = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_range
+    #     if isinstance(drone, DroneType3)
+    # ]
+    # defaultdrone_orders_declined_range = [
+    #     order
+    #     for drone, order in orders_declined_by_drones_range
+    #     if isinstance(drone, DefaultDrone)
+    # ]
 
     num_orders_total = len(bike_orders_delivered) + len(drone_orders_delivered)
 

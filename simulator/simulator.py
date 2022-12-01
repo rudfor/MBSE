@@ -266,36 +266,44 @@ def accept_orders(current_time):
     orders_taken = []
     # Try to assign orders to drones
     for most_urgent_order in orders_copy:
-        order_flag = 0
-        within_range = 0
+        order_flag = False
+        num_drones_within_range = 0
         if not drones_copy:
             break
         # Try to assign the order to a drone
         for drone in drones_copy:
             if drone.within_range(most_urgent_order):
-                within_range += 1
+                num_drones_within_range += 1
                 if drone.take_order(most_urgent_order):
-                    order_flag += 1
+                    order_flag = True
                     # drones_copy.remove(drone)
                     orders_taken.append(most_urgent_order)
                     orders.remove(most_urgent_order)
                     simlog(f"ACTION: {drone.courier_type()} {drone.id} accepted order {most_urgent_order}, "
                           f"time to threshold: {most_urgent_order.time_to_threshold(current_time):.2f} min")
                     break
-                # else:
-                #     if most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
-                #         STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
+                else:
+                    simlog(
+                        f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
+                        f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order} due to battery")
+            else:
+                simlog(
+                    f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
+                    f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order} due to range")
 
-        if within_range == len(drones_copy):
-            if (None, most_urgent_order.id) not in STATS.orders_declined_by_drones_range:
-                STATS.orders_declined_by_drones_range.append((None, most_urgent_order.id))
-        elif not order_flag == len(drones_copy):
-            if (None, most_urgent_order.id) not in STATS.orders_declined_by_drones_battery:
-                STATS.orders_declined_by_drones_battery.append((None, most_urgent_order.id))
+        # If all standby drones have insufficient range and the order is not yet counted
+        if num_drones_within_range == 0 and most_urgent_order.id not in STATS.orders_declined_by_drones_range:
+            #print(f"order {most_urgent_order.id} with distance {most_urgent_order.distance} declined due to range")
+            STATS.orders_declined_by_drones_range.append(most_urgent_order.id)
+        # If the order was not assigned to any drone due to insufficient battery
+        elif num_drones_within_range > 0 and not order_flag and most_urgent_order.id not in STATS.orders_declined_by_drones_range and most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
 
-            simlog(
-                f"ACTION: {drone.courier_type()} {drone.id} with battery {drone.battery:.2f} minutes"
-                f"/ {drone.avg_speed * drone.battery:.2f} meters left could not accept order {most_urgent_order}")
+            #print(f"order {most_urgent_order.id} with distance {most_urgent_order.distance} m declined due to battery")
+            #for drone in drones_copy:
+                #print(f"drone {drone.id} battery: {drone.battery} min")
+            STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
+
+
 
     # Remove orders taken by drones
     for o in orders_taken:
@@ -347,7 +355,7 @@ def print_results():
     print(f"# drone orders delivered: {len(STATS.drone_orders_delivered)}")
     print(f"# orders declined by drones due to insufficient battery: "
           f"{len(STATS.orders_declined_by_drones_battery)}")
-    print(f"# orders declined by drones due to distance: "
+    print(f"# orders declined by drones due to insufficient range: "
           f"{len(STATS.orders_declined_by_drones_range)}")
     try:
         print(f"Avg. bike delivery time: {STATS.avg_bike_delivery_times[-1][1]} min")

@@ -29,10 +29,12 @@ class Drone(Courier):
                 self.update_arrival()
 
     def take_order(self, order):
+        #print(self.is_standby())
         # Drone can take order if it has sufficient battery for the round trip
         if not self.is_standby():
             return False
-        if self.battery >= (2 * order.distance / self.avg_speed) * (1 + (order.weight / 2)):
+        #print(2 * order.distance / self.speed)
+        if self.battery >= 2 * order.distance / self.speed:
             self.order = order
             self.distance_to_destination = self.order.distance
             self.state = CourierState.DeliveringOrder
