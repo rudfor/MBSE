@@ -3,6 +3,7 @@
 
 Python 3.10 or above.
 
+## How to get started
 
 It is always recommended to initialize a virtual environment to avoid dependency issues and pollution of the global pip:
 
