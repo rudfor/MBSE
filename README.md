@@ -30,3 +30,13 @@ To see an complete overview of available arguments, do:
 To run the simulator with default parameters shown in the help page:
 
 `python main.py`
+
+If you want to see the plots but get an error like
+
+`UserWarning: Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.`
+
+You can fix it by:
+
+Windows - you need to run the Python installer and modify the installation to install tkinter. 
+
+Ubuntu - you can just run sudo apt-get install python3-tk.
