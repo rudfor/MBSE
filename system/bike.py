@@ -1,4 +1,3 @@
-import math
 from random import random
 
 import numpy
@@ -65,7 +64,6 @@ class Bike(Courier):
     def update_arrival(self):
         if self.state == CourierState.DeliveringOrder:
             self.state = CourierState.ReturningToKitchen
-            # self.distance_to_destination = self.order.distance
         elif self.state == CourierState.ReturningToKitchen:
             self.state = CourierState.Standby
             self.distance_to_destination = 0

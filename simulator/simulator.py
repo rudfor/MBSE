@@ -1,14 +1,10 @@
-import sys
-
 from simulator.map import Map
 from simulator.config import KITCHEN_NODE_ID
 from simulator.event import EventType, Event
 from simulator.stats import Stats
 from simulator.system import System
-from system.bike import Bike
 from system.courier import CourierState
 from environment.order_generator import OrderGenerator
-from system.drone import Drone
 from utility.log import simlog
 from utility.point import Point
 from utility.argparser import args
@@ -297,10 +293,6 @@ def accept_orders(current_time):
             STATS.orders_declined_by_drones_range.append(most_urgent_order.id)
         # If the order was not assigned to any drone due to insufficient battery
         elif num_drones_within_range > 0 and not order_flag and most_urgent_order.id not in STATS.orders_declined_by_drones_range and most_urgent_order.id not in STATS.orders_declined_by_drones_battery:
-
-            #print(f"order {most_urgent_order.id} with distance {most_urgent_order.distance} m declined due to battery")
-            #for drone in drones_copy:
-                #print(f"drone {drone.id} battery: {drone.battery} min")
             STATS.orders_declined_by_drones_battery.append(most_urgent_order.id)
 
 
@@ -342,7 +334,6 @@ def accept_orders(current_time):
     if orders:
         simlog(f"ACTION: No couriers to take the following {len(orders)} order(s):")
         for order in orders:
-            # simlog(order)
             simlog(str(order) + f", time to threshold: {order.time_to_threshold(current_time):.2f} min")
 
 

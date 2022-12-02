@@ -53,51 +53,7 @@ def number_of_deliveries(
         if isinstance(drone, DefaultDrone)
     ]
 
-    # dronetype1_orders_declined_battery = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_battery
-    #     if isinstance(drone, DroneType1)
-    # ]
-    # dronetype2_orders_declined_battery = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_battery
-    #     if isinstance(drone, DroneType2)
-    # ]
-    # dronetype3_orders_declined_battery = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_battery
-    #     if isinstance(drone, DroneType3)
-    # ]
-    # defaultdrone_orders_declined_battery = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_battery
-    #     if isinstance(drone, DefaultDrone)
-    # ]
-    #
-    # dronetype1_orders_declined_range = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_range
-    #     if isinstance(drone, DroneType1)
-    # ]
-    # dronetype2_orders_declined_range = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_range
-    #     if isinstance(drone, DroneType2)
-    # ]
-    # dronetype3_orders_declined_range = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_range
-    #     if isinstance(drone, DroneType3)
-    # ]
-    # defaultdrone_orders_declined_range = [
-    #     order
-    #     for drone, order in orders_declined_by_drones_range
-    #     if isinstance(drone, DefaultDrone)
-    # ]
-
     num_orders_total = len(bike_orders_delivered) + len(drone_orders_delivered)
-
-    # cprint(f"Total order: {num_orders_total}")
 
     data = [('Declined by drones due to battery', len(orders_declined_by_drones_battery) / num_orders_total * 100),
             ('Declined by drones due to range', len(orders_declined_by_drones_range) / num_orders_total * 100),
@@ -115,7 +71,6 @@ def number_of_deliveries(
     plt.xlim([0, 100])
     plt.title("Order delivery", fontsize=14, fontweight="bold")
     bars = ax.barh(labels, orders_data)
-    # ax.bar_label(bars)
     ax.margins(x=0.3)
     fig.tight_layout()
 
@@ -398,7 +353,6 @@ def drones_performance(drone_orders):
 def average_time_delivery(bike_data, drone_data, order_interarrival_time):
     # plot the graph
     plt.style.use('ggplot')
-    # plt.title(f'Average time for delivering {plot} \n', fontsize=14, fontweight='bold')
     plt.plot([time for time, _ in bike_data], [avg for _, avg in bike_data], 'r-', label='Avg. bike delivery time')
     plt.plot([time for time, _ in drone_data], [avg for _, avg in drone_data], 'b-', label='Avg. drone delivery time')
     plt.plot([time for time, _ in order_interarrival_time],

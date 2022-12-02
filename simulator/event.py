@@ -1,7 +1,6 @@
 from enum import Enum
 
 from system.bike import Bike
-from system.courier import Courier
 from system.drone import Drone
 
 

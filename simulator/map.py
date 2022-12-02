@@ -1,7 +1,6 @@
 import itertools
 import random
 from collections import defaultdict
-
 import osmnx as ox
 from simulator.config import KITCHEN_NODE_ID
 from system.bike import Bike
@@ -45,12 +44,6 @@ class Map:
                     else:
                         bike_paths_colors.append("r")
                     i += 1
-                # bike_path = ox.distance.shortest_path(self.G, KITCHEN_NODE_ID, courier.order.destination_node,
-                #                                       weight='length', cpus=1)
-                #     if courier.state == CourierState.ReturningToKitchen:
-                #         bike_paths_colors.append("r")
-                #     elif courier.state == CourierState.DeliveringOrder:
-                #         bike_paths_colors.append("b")
 
 
 
@@ -146,11 +139,6 @@ class Map:
         all_routes = [[KITCHEN_NODE_ID] + list(p) + [KITCHEN_NODE_ID] for p in destination_permutations]
         shortest_route = min(all_routes, key=lambda r: self.route_length(distances_dict, r))
         shortest_route_distances = [distances_dict[d1][d2] for d1, d2 in zip(shortest_route, shortest_route[1:])]
-
-        # for route in all_routes:
-        #     simlog(route)
-        #     simlog("length:")
-        #     simlog(self.route_length(distances_dict, route))
 
         return shortest_route, shortest_route_distances
 
