@@ -1,6 +1,6 @@
-from display.df_cost_time import number_of_deliveries, delivery_time_intervals, delivery_threshold, \
+from display.plotting import number_of_deliveries, delivery_time_intervals, delivery_threshold, \
     average_time_delivery, system_cost
-from display.df_cost_time import drones_performance, number_of_deliveries, delivery_time_intervals, delivery_threshold
+from display.plotting import drones_performance, number_of_deliveries, delivery_time_intervals, delivery_threshold
 
 
 class Stats:

@@ -7,3 +7,5 @@ virtenv
 random
 excel
 pie/
+myenv/
+*.bak

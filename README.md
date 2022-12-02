@@ -1,9 +1,14 @@
 # 02223 Model-Based Systems Engineering Fall 22: Drones vs. Bikes food delivery
 ## Prerequisites
 
-Python 3.10 or above.
+- Python 3.10 or above.
 
 ## How to get started
+Assuming `python -V` yields a version >= 3.10, then one should be able to proceed with no further ado. If not, then one might have to explicitly do:
+
+`python3.10 ...`
+
+Note, the above will obviously only work if it is already installed.
 
 It is always recommended to initialize a virtual environment to avoid dependency issues and pollution of the global pip:
 

@@ -1,13 +1,3 @@
-"""
-The function calculate the labor productivity ie. cost/time -> the formular used is: Total output / total input 
-
-Input: ID, time and range. Where ID is used to compare the two systems with each order. Time is how long each order took and range is the distance from the resturan to the customer.
-Range might not be used.
-
-Output will be a plot to give an easy overview how the two systems compares to each other. Where the x-axis is time in hours over a periode of 1 or more hours
-and y-axis is the labor productivity for that periode.
-
-"""
 # For the data
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,8 +12,8 @@ def get_sim_time(data):
     return data
 
 
-# Number of deleveries for both bikes and drones - also how many they missed
-# Plottet against each other to show who took the most orders
+# Number of deliveries for both bikes and drones - also how many they missed
+# Plotted against each other to show who took the most orders
 
 # input: list of all orders for both bikes and drones also missed deliveries
 def number_of_deliveries(
@@ -343,9 +333,9 @@ def drones_performance(drone_orders):
     )
     ax.set_xticks(x, labels)
     ax.legend()
-    ax.bar_label(rects1)
-    ax.bar_label(rects2)
-
+    ax.bar_label(rects1, fmt='%.2f%%', fontsize=7.5)
+    ax.bar_label(rects2, fmt='%.2f%%', fontsize=7.5)
+    
     fig.tight_layout()
     plt.show()
 
