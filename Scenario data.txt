@@ -1,0 +1,10 @@
+In this document we list all the commands used to run all the simulations presented in the report.
+The exact usage of these are describe in the report.
+
+python3.10 main.py -b 0 --defaultdrones 0 --dronetype1 3 -t 10080 --seed 1241
+python3.10 main.py -b 0 --defaultdrones 0 --dronetype2 3 -t 10080 --seed 1241
+python3.10 main.py -b 0 --defaultdrones 0 --dronetype3 3 -t 10080 --seed 1241
+python3.10 main.py -b 0 --defaultdrones 0 --dronetype3 2 -t 10080 --seed 1241
+python3.10 main.py -b 0 --defaultdrones 2 --drone-avg-speed 450 --drone-range 15000 --drone-charge-time 40 --drone-battery-capacity 280 --drone-flight-time 280 -t 10080 --seed 1241
+python3.10 main.py -b 9 --defaultdrones 0 -t 10080 --seed 1241
+python3.10 main.py -b 9 --defaultdrones 0 -t 100800 --seed 1241
