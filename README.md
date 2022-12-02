@@ -16,7 +16,7 @@ It is always recommended to initialize a virtual environment to avoid dependency
 
 Activate the virtual environment:
 
-`source myenv/bin/activate`
+`source myvenv/bin/activate`
 
 Then install requirements from the `requirements.txt` file:
 
