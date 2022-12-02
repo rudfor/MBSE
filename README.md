@@ -1,5 +1,8 @@
-# 02223 Model-Based Systems Engineering Fall 22
-## Drones vs. Bikes food delivery
+# 02223 Model-Based Systems Engineering Fall 22: Drones vs. Bikes food delivery
+## Prerequisites
+
+Python 3.10 or above.
+
 
 It is always recommended to initialize a virtual environment to avoid dependency issues and pollution of the global pip:
 
